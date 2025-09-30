@@ -1,8 +1,8 @@
 
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Badminton Doubles Tournament Manager
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `001-i-want-an` | **Date**: 2025-09-30 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/home/axel-fpoc/badminton_draw/specs/001-i-want-an/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,44 +31,44 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+Primary requirement: Web-based tournament management system for badminton doubles with random pairing, scoring (+2 winners, +1 losers), and live ranking display. Technical approach: Material 3 web interface with multi-page navigation and Docker deployment capabilities.
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: JavaScript/TypeScript (ES2022), HTML5, CSS3  
+**Primary Dependencies**: Material 3 Web Components, minimal web framework (Vue.js or vanilla JS)  
+**Storage**: Browser localStorage for persistence (simple JSON data)  
+**Testing**: Jest for JavaScript unit tests, manual testing for UI workflows  
+**Target Platform**: Modern web browsers (Chrome, Firefox, Safari, Edge)
+**Project Type**: web - frontend-focused single-page application with multiple tabs/pages  
+**Performance Goals**: <2s initial load, <500ms navigation between pages  
+**Constraints**: Offline-capable preferred, mobile-responsive design  
+**Scale/Scope**: Small tournaments (4-20 players), lightweight deployment with Docker
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 ### I. Frugal Development
-- [ ] Dependencies minimized: Only essential libraries listed in Technical Context
-- [ ] No premature optimization: Simple solutions proposed, not complex architectures
-- [ ] Infrastructure kept minimal: No unnecessary build tools, CI/CD, or deployment complexity
-- [ ] "Good enough" standard: Feature scope doesn't include polish or perfection
+- [x] Dependencies minimized: Material 3 Web Components + minimal framework, localStorage storage
+- [x] No premature optimization: Simple SPA architecture, no complex state management
+- [x] Infrastructure kept minimal: Docker for deployment only, no build pipelines beyond basic bundling
+- [x] "Good enough" standard: Functional UI over polished design, core workflows prioritized
 
 ### II. Functional First  
-- [ ] Working software prioritized: Design focuses on complete workflows, not beauty
-- [ ] Code clarity over cleverness: Straightforward implementations in design docs
-- [ ] End-to-end validation planned: Manual testing scenarios documented in quickstart.md
+- [x] Working software prioritized: Complete tournament workflow before UI polish
+- [x] Code clarity over cleverness: Direct DOM manipulation or simple framework usage
+- [x] End-to-end validation planned: Manual testing scenarios for tournament flows
 
 ### III. Pragmatic Testing
-- [ ] Test scope limited: Only critical business logic and key workflows have integration tests
-- [ ] No TDD requirement: Tests can be written after implementation
-- [ ] Manual testing acceptable: UI flows documented in manual-testing.md rather than automated
-- [ ] Test-light approach: Avoids testing simple/boilerplate code
+- [x] Test scope limited: Test pairing logic, scoring calculations, data persistence only
+- [x] No TDD requirement: Implement first, test critical business logic after
+- [x] Manual testing acceptable: UI interactions tested manually with quickstart scenarios
+- [x] Test-light approach: Skip testing simple form handlers and display logic
 
 ### IV. Simple Architecture
-- [ ] Structure straightforward: No forced abstractions or unnecessary layers
-- [ ] Minimal configuration: Reasonable defaults, limited configurable options
-- [ ] Clear organization: Files grouped by feature/domain, not technical layers
-- [ ] Direct implementations: Design patterns only when solving real problems
+- [x] Structure straightforward: Feature-based organization (players, rounds, scoring)
+- [x] Minimal configuration: Reasonable defaults for tournament settings
+- [x] Clear organization: Group by tournament features, not MVC layers
+- [x] Direct implementations: Plain JavaScript/DOM APIs where sufficient
 
 ## Project Structure
 
@@ -84,50 +84,33 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+├── components/          # Material 3 web components
+├── pages/              # Tournament pages/tabs
+│   ├── players/        # Player management page
+│   ├── rounds/         # Round generation and match display
+│   ├── scoring/        # Match result entry
+│   └── rankings/       # Live rankings display
+├── services/           # Business logic
+│   ├── tournament.js   # Tournament state management
+│   ├── pairing.js      # Random pairing algorithms
+│   └── storage.js      # localStorage persistence
+└── assets/             # CSS, Material 3 theme files
 
 tests/
-├── contract/
-├── integration/
-└── unit/
+├── integration/        # End-to-end tournament workflows
+└── unit/              # Business logic tests (pairing, scoring)
 
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
+public/
+├── index.html         # Main entry point
+└── manifest.json      # PWA manifest (optional)
 
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+Dockerfile             # Container deployment
+package.json           # Dependencies and scripts
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Web application with frontend-only architecture using Material 3 design system. Feature-based page organization with shared services for business logic. Simple build process with Docker containerization for deployment.
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
@@ -188,18 +171,28 @@ directories captured above]
 
 **Task Generation Strategy**:
 - Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+- Generate tasks from Phase 1 design docs (data-model.md, contracts/, quickstart.md)
+- Core business logic tests: Pairing algorithms, scoring calculations, data persistence
+- Service implementation tasks: TournamentService, StorageService, PairingService
+- UI component tasks: Player management, round display, scoring interface, rankings
+- Integration tasks: Service wiring, localStorage persistence, Docker deployment
+
+**Specific Task Categories**:
+1. **Setup Tasks**: Project structure, package.json, Docker configuration
+2. **Critical Logic Tests**: Pairing constraints, scoring rules, data validation  
+3. **Service Implementation**: Business logic services per contracts
+4. **UI Pages**: Material 3 components for each tournament phase
+5. **Integration**: Service connections, persistence, navigation
+6. **Deployment**: Docker optimization, static file serving
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
+- Foundation first: Project setup, core services
+- Business logic before UI: Services implemented before pages consume them
+- Feature-complete pages: Each page fully functional before moving to next
+- Integration and deployment last
+- Mark [P] for parallel execution where files don't conflict
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Estimated Output**: 20-25 numbered tasks focusing on essential functionality
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -223,17 +216,17 @@ directories captured above]
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
 - [ ] Complexity deviations documented
 
 ---

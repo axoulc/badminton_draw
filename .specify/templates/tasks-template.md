@@ -47,55 +47,58 @@
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
-**CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
-- [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
-- [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
-- [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
+## Phase 3.2: Tests for Critical Paths (Pragmatic Testing)
+**IMPORTANT: Test only critical business logic and key workflows**
+- [ ] T004 [P] Integration test for [critical workflow 1] in tests/integration/test_[workflow].py
+- [ ] T005 [P] Integration test for [critical workflow 2] in tests/integration/test_[workflow2].py
+- [ ] T006 [P] Test for [complex business logic] in tests/unit/test_[logic].py
 
-## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T008 [P] User model in src/models/user.py
-- [ ] T009 [P] UserService CRUD in src/services/user_service.py
-- [ ] T010 [P] CLI --create-user in src/cli/user_commands.py
-- [ ] T011 POST /api/users endpoint
-- [ ] T012 GET /api/users/{id} endpoint
-- [ ] T013 Input validation
-- [ ] T014 Error handling and logging
+**Note**: Skip testing simple getters/setters, boilerplate, and straightforward CRUD. Tests can be written AFTER implementation. Manual testing documented in manual-testing.md is acceptable for UI flows.
 
-## Phase 3.4: Integration
-- [ ] T015 Connect UserService to DB
-- [ ] T016 Auth middleware
-- [ ] T017 Request/response logging
-- [ ] T018 CORS and security headers
+## Phase 3.3: Core Implementation
+- [ ] T007 [P] [Entity] model in src/models/[entity].py
+- [ ] T008 [P] [Service] implementation in src/services/[service].py
+- [ ] T009 [P] CLI command for [action] in src/cli/[commands].py
+- [ ] T010 [Endpoint/UI] implementation
+- [ ] T011 Input validation for critical fields
+- [ ] T012 Error handling for key scenarios
 
-## Phase 3.5: Polish
-- [ ] T019 [P] Unit tests for validation in tests/unit/test_validation.py
-- [ ] T020 Performance tests (<200ms)
-- [ ] T021 [P] Update docs/api.md
-- [ ] T022 Remove duplication
-- [ ] T023 Run manual-testing.md
+## Phase 3.4: Integration (If Needed)
+- [ ] T013 Connect services to storage/data layer
+- [ ] T014 Add basic logging for debugging
+- [ ] T015 Error handling middleware (if applicable)
+
+## Phase 3.5: Polish (Minimal)
+- [ ] T016 [P] Additional tests for complex logic (if needed) in tests/unit/test_[component].py
+- [ ] T017 [P] Update quickstart.md with usage instructions
+- [ ] T018 Manual testing checklist in manual-testing.md
+- [ ] T019 Code cleanup: Remove obvious duplication only
 
 ## Dependencies
-- Tests (T004-T007) before implementation (T008-T014)
-- T008 blocks T009, T015
-- T016 blocks T018
-- Implementation before polish (T019-T023)
+- Critical tests (T004-T006) can be written after implementation if needed
+- Models (T007) before services (T008)
+- Core implementation (T007-T012) before integration (T013-T015)
+- Implementation before minimal polish (T016-T019)
 
 ## Parallel Example
 ```
-# Launch T004-T007 together:
-Task: "Contract test POST /api/users in tests/contract/test_users_post.py"
-Task: "Contract test GET /api/users/{id} in tests/contract/test_users_get.py"
-Task: "Integration test registration in tests/integration/test_registration.py"
-Task: "Integration test auth in tests/integration/test_auth.py"
+# Launch T004-T006 together (if doing tests first):
+Task: "Integration test for [workflow 1] in tests/integration/test_[workflow].py"
+Task: "Integration test for [workflow 2] in tests/integration/test_[workflow2].py"
+Task: "Test for [complex logic] in tests/unit/test_[logic].py"
+
+# Or launch implementation tasks together:
+Task: "[Entity] model in src/models/[entity].py"
+Task: "[Service] implementation in src/services/[service].py" 
+Task: "CLI command for [action] in src/cli/[commands].py"
 ```
 
 ## Notes
 - [P] tasks = different files, no dependencies
-- Verify tests fail before implementing
+- Tests can be written after implementation (pragmatic approach)
+- Focus testing on critical business logic only
 - Commit after each task
-- Avoid: vague tasks, same file conflicts
+- Avoid: vague tasks, same file conflicts, over-testing boilerplate code
 
 ## Task Generation Rules
 *Applied during main() execution*

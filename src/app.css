@@ -1,0 +1,415 @@
+/* App Shell Styles - Material 3 Design */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface);
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--md-sys-color-background);
+}
+
+/* App Header */
+.app-header {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 16px 24px;
+    box-shadow: var(--md-sys-elevation-2);
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.app-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-icon {
+    font-size: 32px;
+    color: var(--md-sys-color-on-primary);
+}
+
+.app-title h1 {
+    margin: 0;
+    color: var(--md-sys-color-on-primary);
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.header-actions md-icon-button {
+    --md-icon-button-unselected-icon-color: var(--md-sys-color-on-primary);
+}
+
+/* Navigation */
+.app-navigation {
+    background: var(--md-sys-color-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+md-tabs {
+    --md-primary-tab-active-indicator-color: var(--md-sys-color-primary);
+    --md-primary-tab-active-label-text-color: var(--md-sys-color-primary);
+    --md-primary-tab-inactive-label-text-color: var(--md-sys-color-on-surface-variant);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Main Content */
+.app-main {
+    flex: 1;
+    position: relative;
+    background: var(--md-sys-color-background);
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--md-sys-color-surface-rgb), 0.8);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+}
+
+.loading-text {
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+    margin: 0;
+}
+
+.page-container {
+    min-height: calc(100vh - 180px); /* Adjust based on header/nav/footer heights */
+}
+
+/* Settings Dialog */
+md-dialog {
+    --md-dialog-container-color: var(--md-sys-color-surface-container-high);
+    --md-dialog-max-width: 500px;
+}
+
+md-dialog [slot="content"] {
+    padding: 16px 0;
+}
+
+.settings-section {
+    margin-bottom: 32px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section h3 {
+    margin: 0 0 16px 0;
+    color: var(--md-sys-color-on-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 8px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.setting-row:last-child {
+    margin-bottom: 0;
+}
+
+.setting-row label {
+    color: var(--md-sys-color-on-surface);
+    flex: 1;
+    min-width: 120px;
+}
+
+.setting-row md-outlined-text-field {
+    width: 100px;
+}
+
+.setting-row md-outlined-button {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* Status Bar */
+.app-status-bar {
+    background: var(--md-sys-color-surface-container-lowest);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-separator {
+    opacity: 0.5;
+}
+
+.status-actions {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: 80px; /* Above status bar */
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: var(--md-sys-elevation-3);
+    max-width: 400px;
+    min-width: 280px;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.toast.error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.toast.info {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.toast md-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.toast span {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* Typography Classes */
+.headline-large {
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 40px;
+}
+
+.headline-medium {
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 36px;
+}
+
+.title-large {
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 28px;
+}
+
+.title-medium {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+}
+
+.body-large {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+}
+
+.body-medium {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.body-small {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 12px 16px;
+    }
+    
+    .header-content {
+        gap: 16px;
+    }
+    
+    .app-title h1 {
+        font-size: 20px;
+    }
+    
+    .app-icon {
+        font-size: 24px;
+    }
+    
+    .header-actions {
+        gap: 4px;
+    }
+    
+    md-tabs {
+        overflow-x: auto;
+    }
+    
+    .app-status-bar {
+        padding: 6px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        text-align: center;
+    }
+    
+    .status-info {
+        justify-content: center;
+    }
+    
+    .setting-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .setting-row label {
+        min-width: auto;
+    }
+    
+    .setting-row md-outlined-text-field,
+    .setting-row md-outlined-button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .toast {
+        left: 16px;
+        right: 16px;
+        transform: translateY(100px);
+        max-width: none;
+        min-width: auto;
+    }
+    
+    .toast.show {
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 8px 12px;
+    }
+    
+    .app-title {
+        gap: 8px;
+    }
+    
+    .app-title h1 {
+        font-size: 18px;
+    }
+    
+    .app-icon {
+        font-size: 20px;
+    }
+    
+    .page-container {
+        min-height: calc(100vh - 160px);
+    }
+    
+    .app-status-bar {
+        padding: 4px 12px;
+        font-size: 11px;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: var(--md-sys-color-surface-dim);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .app-header {
+        border-bottom: 2px solid var(--md-sys-color-outline);
+    }
+    
+    .app-navigation {
+        border-bottom: 2px solid var(--md-sys-color-outline);
+    }
+    
+    .app-status-bar {
+        border-top: 2px solid var(--md-sys-color-outline);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .toast {
+        transition: opacity 0.1s ease;
+    }
+    
+    .loading-overlay {
+        backdrop-filter: none;
+    }
+}

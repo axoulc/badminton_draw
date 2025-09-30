@@ -1,0 +1,43 @@
+{
+  "name": "badminton-tournament-manager",
+  "version": "1.0.0",
+  "description": "Web-based badminton doubles tournament management system with random pairing and scoring",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "http-server public -p 3000 -c-1",
+    "dev": "http-server public -p 3000 -c-1 -o",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "npm run copy-src",
+    "copy-src": "cp -r src/* public/",
+    "docker:build": "docker build -t badminton-tournament .",
+    "docker:run": "docker run -p 8080:80 badminton-tournament"
+  },
+  "keywords": [
+    "badminton",
+    "tournament",
+    "doubles",
+    "pairing",
+    "scoring",
+    "material-design"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@material/web": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    "http-server": "^14.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": [
+      "**/tests/**/*.js"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ]
+  }
+}

@@ -31,11 +31,13 @@
 - ✅ Focus on WHAT users need and WHY
 - ❌ Avoid HOW to implement (no tech stack, APIs, code structure)
 - 👥 Written for business stakeholders, not developers
+- 🎯 Keep scope minimal: "Good enough" functional requirements, not perfection
 
 ### Section Requirements
 - **Mandatory sections**: Must be completed for every feature
 - **Optional sections**: Include only when relevant to the feature
 - When a section doesn't apply, remove it entirely (don't leave as "N/A")
+- **Frugal principle**: Specify minimum viable requirements, not ideal-state features
 
 ### For AI Generation
 When creating this spec from a user prompt:
