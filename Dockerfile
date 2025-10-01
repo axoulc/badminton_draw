@@ -10,6 +10,7 @@ COPY lib ./lib
 COPY web ./web
 COPY analysis_options.yaml ./
 
+RUN flutter pub cache repair
 # Get dependencies
 RUN flutter pub get
 
