@@ -226,3 +226,5 @@ deployment/
 *.sqlite
 *.sqlite3
 *.db
+
+.dart_tool/
