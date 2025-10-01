@@ -111,6 +111,66 @@ class TournamentService {
     );
   }
 
+  /// Import multiple players from JSON list
+  Tournament importPlayers(Tournament tournament, List<String> playerNames) {
+    if (tournament.status != TournamentStatus.setup) {
+      throw TournamentException(
+        'Cannot import players after tournament starts',
+      );
+    }
+
+    final existingNames = tournament.players
+        .map((p) => p.name.toLowerCase())
+        .toSet();
+    final newPlayers = <Player>[];
+    final duplicates = <String>[];
+
+    for (final name in playerNames) {
+      final trimmedName = name.trim();
+      if (trimmedName.isEmpty) continue;
+
+      final lowerName = trimmedName.toLowerCase();
+      if (existingNames.contains(lowerName)) {
+        duplicates.add(trimmedName);
+        continue;
+      }
+
+      existingNames.add(lowerName);
+      newPlayers.add(Player(id: _uuid.v4(), name: trimmedName));
+    }
+
+    if (duplicates.isNotEmpty && newPlayers.isEmpty) {
+      throw TournamentException(
+        'All players already exist: ${duplicates.join(", ")}',
+      );
+    }
+
+    final updatedPlayers = List<Player>.from(tournament.players)
+      ..addAll(newPlayers);
+
+    return tournament.copyWith(
+      players: updatedPlayers,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// Update tournament scoring settings
+  Tournament updateScoringSettings(
+    Tournament tournament,
+    int winnerPoints,
+    int loserPoints,
+  ) {
+    if (winnerPoints < 0 || loserPoints < 0) {
+      throw TournamentException('Points cannot be negative');
+    }
+
+    return tournament.copyWith(
+      winnerPoints: winnerPoints,
+      loserPoints: loserPoints,
+      updatedAt: DateTime.now(),
+    );
+  }
+
   /// Start the tournament
   Tournament startTournament(Tournament tournament) {
     if (!tournament.canStart) {
@@ -181,6 +241,7 @@ class TournamentService {
       tournament.players,
       match,
       winnerId,
+      tournament,
     );
 
     return tournament.copyWith(
@@ -195,6 +256,7 @@ class TournamentService {
     List<Player> players,
     Match match,
     String winnerId,
+    Tournament tournament,
   ) {
     final winningTeam = winnerId == 'team1' ? match.team1 : match.team2;
     final losingTeam = winnerId == 'team1' ? match.team2 : match.team1;
@@ -204,7 +266,7 @@ class TournamentService {
       if (winningTeam.any((p) => p.id == player.id)) {
         return player.copyWith(
           wins: player.wins + 1,
-          points: player.points + 2, // Winner gets 2 points
+          points: player.points + tournament.winnerPoints,
         );
       }
 
@@ -212,7 +274,7 @@ class TournamentService {
       if (losingTeam.any((p) => p.id == player.id)) {
         return player.copyWith(
           losses: player.losses + 1,
-          points: player.points + 1, // Loser gets 1 point
+          points: player.points + tournament.loserPoints,
         );
       }
 

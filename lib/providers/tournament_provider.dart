@@ -109,6 +109,44 @@ class TournamentProvider extends ChangeNotifier {
     }
   }
 
+  /// Import multiple players from list
+  Future<void> importPlayers(List<String> playerNames) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.importPlayers(_tournament!, playerNames);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to import players: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Update scoring settings
+  Future<void> updateScoringSettings(int winnerPoints, int loserPoints) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.updateScoringSettings(
+        _tournament!,
+        winnerPoints,
+        loserPoints,
+      );
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to update scoring settings: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Start the tournament
   Future<void> startTournament() async {
     if (_tournament == null) return;

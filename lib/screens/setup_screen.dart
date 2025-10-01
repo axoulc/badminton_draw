@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
 import '../providers/tournament_provider.dart';
 import '../models/tournament.dart';
 
@@ -179,6 +180,17 @@ class _SetupScreenState extends State<SetupScreen> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 8),
+
+                            // Import players button
+                            OutlinedButton.icon(
+                              onPressed: () => _showImportDialog(context),
+                              icon: const Icon(Icons.file_upload),
+                              label: const Text('Import Players (JSON)'),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 40),
+                              ),
+                            ),
                             const SizedBox(height: 16),
 
                             // Players list
@@ -333,6 +345,98 @@ class _SetupScreenState extends State<SetupScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  void _showImportDialog(BuildContext context) {
+    final textController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Players'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Paste a JSON array of player names:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Example:\n["Alice", "Bob", "Charlie", "David"]',
+                style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: textController,
+                maxLines: 10,
+                decoration: const InputDecoration(
+                  hintText: '["Player 1", "Player 2", ...]',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _importPlayers(textController.text);
+            },
+            icon: const Icon(Icons.upload),
+            label: const Text('Import'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _importPlayers(String jsonText) async {
+    final provider = Provider.of<TournamentProvider>(context, listen: false);
+
+    try {
+      // Parse JSON
+      final dynamic decoded = jsonDecode(jsonText);
+
+      if (decoded is! List) {
+        throw Exception('Expected a JSON array');
+      }
+
+      final playerNames = decoded.map((e) => e.toString()).toList();
+
+      if (playerNames.isEmpty) {
+        throw Exception('No players found in the JSON');
+      }
+
+      // Import players
+      await provider.importPlayers(playerNames);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully imported ${playerNames.length} players',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Import failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

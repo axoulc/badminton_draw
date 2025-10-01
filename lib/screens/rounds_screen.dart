@@ -142,9 +142,7 @@ class _MatchTile extends StatelessWidget {
               team: match.team1,
               isWinner: match.team1Won,
               isCompleted: isCompleted,
-              onTap: !isCompleted
-                  ? () => _recordResult(context, 'team1')
-                  : null,
+              onTap: () => _recordResult(context, 'team1'),
             ),
           ),
           Padding(
@@ -156,13 +154,18 @@ class _MatchTile extends StatelessWidget {
               team: match.team2,
               isWinner: match.team2Won,
               isCompleted: isCompleted,
-              onTap: !isCompleted
-                  ? () => _recordResult(context, 'team2')
-                  : null,
+              onTap: () => _recordResult(context, 'team2'),
             ),
           ),
         ],
       ),
+      trailing: isCompleted
+          ? IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Edit result',
+              onPressed: () => _showEditResultDialog(context),
+            )
+          : null,
     );
   }
 
@@ -190,6 +193,64 @@ class _MatchTile extends StatelessWidget {
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
+  }
+
+  void _showEditResultDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Match Result'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select the winner:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Icon(
+                match.team1Won ? Icons.check_circle : Icons.circle_outlined,
+                color: match.team1Won ? Colors.green : null,
+              ),
+              title: Text(
+                match.getTeamName(match.team1),
+                style: TextStyle(
+                  fontWeight: match.team1Won
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _recordResult(context, 'team1');
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                match.team2Won ? Icons.check_circle : Icons.circle_outlined,
+                color: match.team2Won ? Colors.green : null,
+              ),
+              title: Text(
+                match.getTeamName(match.team2),
+                style: TextStyle(
+                  fontWeight: match.team2Won
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _recordResult(context, 'team2');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -6,6 +6,7 @@ import 'setup_screen.dart';
 import 'players_screen.dart';
 import 'rounds_screen.dart';
 import 'rankings_screen.dart';
+import 'settings_screen.dart';
 
 /// Main home screen with navigation
 class HomeScreen extends StatefulWidget {
@@ -62,6 +63,15 @@ class _HomeScreenState extends State<HomeScreen> {
               PopupMenuButton<String>(
                 onSelected: (value) => _handleMenuAction(context, value),
                 itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'settings',
+                    child: ListTile(
+                      leading: Icon(Icons.settings),
+                      title: Text('Settings'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                   const PopupMenuItem(
                     value: 'export',
                     child: ListTile(
@@ -151,6 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = Provider.of<TournamentProvider>(context, listen: false);
 
     switch (action) {
+      case 'settings':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+        );
+        break;
       case 'export':
         _showExportDialog(context, provider);
         break;

@@ -92,6 +92,8 @@ class Tournament {
               ?.map((r) => Round.fromJson(r as Map<String, dynamic>))
               .toList() ??
           [],
+      winnerPoints: json['winnerPoints'] as int? ?? 2,
+      loserPoints: json['loserPoints'] as int? ?? 1,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
@@ -108,6 +110,8 @@ class Tournament {
       'status': status.name,
       'players': players.map((p) => p.toJson()).toList(),
       'rounds': rounds.map((r) => r.toJson()).toList(),
+      'winnerPoints': winnerPoints,
+      'loserPoints': loserPoints,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -144,6 +148,8 @@ class Tournament {
     TournamentStatus? status,
     List<Player>? players,
     List<Round>? rounds,
+    int? winnerPoints,
+    int? loserPoints,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -154,6 +160,8 @@ class Tournament {
       status: status ?? this.status,
       players: players ?? this.players,
       rounds: rounds ?? this.rounds,
+      winnerPoints: winnerPoints ?? this.winnerPoints,
+      loserPoints: loserPoints ?? this.loserPoints,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
