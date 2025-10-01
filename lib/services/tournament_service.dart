@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '../models/player.dart';
 import '../models/match.dart';
@@ -217,6 +218,16 @@ class TournamentService {
       throw TournamentException('Winner must be either "team1" or "team2"');
     }
 
+    // Find the original match before updating
+    final originalMatch = tournament.rounds
+        .firstWhere((r) => r.id == roundId)
+        .matches
+        .firstWhere((m) => m.id == matchId);
+
+    // Check if match was already completed
+    final wasCompleted = originalMatch.isCompleted;
+    final oldWinnerId = originalMatch.winnerId;
+
     // Find the round and match
     final updatedRounds = tournament.rounds.map((round) {
       if (round.id == roundId) {
@@ -232,14 +243,22 @@ class TournamentService {
     }).toList();
 
     // Update player statistics
-    final match = tournament.rounds
-        .firstWhere((r) => r.id == roundId)
-        .matches
-        .firstWhere((m) => m.id == matchId);
+    var updatedPlayers = tournament.players;
 
-    final updatedPlayers = _updatePlayerStats(
-      tournament.players,
-      match,
+    // If match was already completed, first remove old scores
+    if (wasCompleted && oldWinnerId != null) {
+      updatedPlayers = _removeMatchStats(
+        updatedPlayers,
+        originalMatch,
+        oldWinnerId,
+        tournament,
+      );
+    }
+
+    // Add new scores
+    updatedPlayers = _addMatchStats(
+      updatedPlayers,
+      originalMatch,
       winnerId,
       tournament,
     );
@@ -251,8 +270,39 @@ class TournamentService {
     );
   }
 
-  /// Update player statistics after a match
-  List<Player> _updatePlayerStats(
+  /// Remove player statistics from a match (for editing results)
+  List<Player> _removeMatchStats(
+    List<Player> players,
+    Match match,
+    String winnerId,
+    Tournament tournament,
+  ) {
+    final winningTeam = winnerId == 'team1' ? match.team1 : match.team2;
+    final losingTeam = winnerId == 'team1' ? match.team2 : match.team1;
+
+    return players.map((player) {
+      // Check if player was in winning team
+      if (winningTeam.any((p) => p.id == player.id)) {
+        return player.copyWith(
+          wins: player.wins - 1,
+          points: player.points - tournament.winnerPoints,
+        );
+      }
+
+      // Check if player was in losing team
+      if (losingTeam.any((p) => p.id == player.id)) {
+        return player.copyWith(
+          losses: player.losses - 1,
+          points: player.points - tournament.loserPoints,
+        );
+      }
+
+      return player;
+    }).toList();
+  }
+
+  /// Add player statistics after a match
+  List<Player> _addMatchStats(
     List<Player> players,
     Match match,
     String winnerId,
@@ -418,6 +468,22 @@ class TournamentStats {
 
   double get playerParticipationRate =>
       totalPlayers > 0 ? activePlayers / totalPlayers : 0.0;
+}
+
+/// Export tournament to JSON string (for backup)
+String exportTournamentToJson(Tournament tournament) {
+  final jsonData = tournament.toJson();
+  return const JsonEncoder.withIndent('  ').convert(jsonData);
+}
+
+/// Import tournament from JSON string (restore from backup)
+Tournament importTournamentFromJson(String jsonString) {
+  try {
+    final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+    return Tournament.fromJson(jsonData);
+  } catch (e) {
+    throw TournamentException('Invalid backup file format: $e');
+  }
 }
 
 /// Tournament exception

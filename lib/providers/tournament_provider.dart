@@ -294,6 +294,27 @@ class TournamentProvider extends ChangeNotifier {
     return await _tournamentService.createBackup(_tournament!);
   }
 
+  /// Export tournament as JSON string (for file download)
+  String exportBackupJson() {
+    if (_tournament == null) throw Exception('No tournament to export');
+    return exportTournamentToJson(_tournament!);
+  }
+
+  /// Import tournament from JSON string (restore from file)
+  Future<void> importBackupJson(String jsonString) async {
+    _setLoading(true);
+    try {
+      _tournament = importTournamentFromJson(jsonString);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to import backup: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Save tournament to storage
   Future<void> _saveTournament() async {
     if (_tournament != null) {

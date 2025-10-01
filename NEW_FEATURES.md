@@ -2,7 +2,53 @@
 
 ## Recent Updates (October 2025)
 
-### 1. ✅ JSON Import for Bulk Player Addition
+### 1. ✅ Export & Import Backup Files
+
+**Feature:** Save and restore complete tournament state as JSON files
+
+**Location:** 
+- **Export:** Main screen menu (⋮) → "Export Backup"
+- **Import (with tournament):** Main screen menu (⋮) → "Import Backup"
+- **Import (no tournament):** Setup screen → "Import Backup" button
+
+**How to use:**
+
+**Exporting a backup:**
+1. Open the menu (⋮) in the top-right corner
+2. Click "Export Backup"
+3. A JSON file will be downloaded (e.g., `MyTournament_backup_2025-10-01.json`)
+4. Save this file in a safe location
+
+**Importing a backup:**
+1. If you have a tournament: Open menu (⋮) → "Import Backup"
+2. If you don't have a tournament: Setup screen → "Import Backup" button
+3. Select the backup JSON file
+4. Your tournament will be completely restored
+
+**What's preserved:**
+- ✅ Tournament name and settings
+- ✅ All players and their statistics
+- ✅ All rounds and match results
+- ✅ Winner/loser point configuration
+- ✅ Tournament status (setup/active/completed)
+
+**Benefits:**
+- Create backups before major changes
+- Share tournaments with others
+- Move tournaments between devices
+- Restore after accidental deletion
+- Keep historical records
+
+**Use cases:**
+- **Before experimenting:** Create a backup before trying new settings
+- **Weekly backups:** Keep tournament history safe
+- **Tournament migration:** Move to a new device
+- **Sharing:** Send tournament to co-organizers
+- **Archives:** Store completed tournaments
+
+---
+
+### 2. ✅ JSON Import for Bulk Player Addition
 
 **Feature:** Import multiple players at once using JSON format
 
@@ -27,7 +73,7 @@
 
 ---
 
-### 2. ✅ Edit Match Results
+### 3. ✅ Edit Match Results
 
 **Feature:** Change the winner of a completed match
 
@@ -48,7 +94,7 @@
 
 ---
 
-### 3. ✅ Configurable Scoring System
+### 4. ✅ Configurable Scoring System
 
 **Feature:** Customize points awarded to winners and losers
 

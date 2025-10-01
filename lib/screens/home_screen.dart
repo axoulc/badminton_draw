@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tournament_provider.dart';
@@ -68,6 +70,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListTile(
                       leading: Icon(Icons.settings),
                       title: Text('Settings'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'export_backup',
+                    child: ListTile(
+                      leading: Icon(Icons.download),
+                      title: Text('Export Backup'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'import_backup',
+                    child: ListTile(
+                      leading: Icon(Icons.upload),
+                      title: Text('Import Backup'),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -167,6 +187,12 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
         break;
+      case 'export_backup':
+        _exportBackupFile(context, provider);
+        break;
+      case 'import_backup':
+        _importBackupFile(context, provider);
+        break;
       case 'export':
         _showExportDialog(context, provider);
         break;
@@ -198,6 +224,69 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _exportBackupFile(BuildContext context, TournamentProvider provider) {
+    try {
+      final jsonString = provider.exportBackupJson();
+      final tournament = provider.tournament!;
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      final filename = '${tournament.name}_backup_$timestamp.json';
+
+      // Create a blob and download it
+      final bytes = utf8.encode(jsonString);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      // ignore: unused_local_variable
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', filename)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Backup exported: $filename')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error exporting backup: $e')));
+      }
+    }
+  }
+
+  void _importBackupFile(BuildContext context, TournamentProvider provider) {
+    final uploadInput = html.FileUploadInputElement()..accept = '.json';
+    uploadInput.click();
+
+    uploadInput.onChange.listen((event) {
+      final file = uploadInput.files?.first;
+      if (file != null) {
+        final reader = html.FileReader();
+        reader.readAsText(file);
+
+        reader.onLoadEnd.listen((event) async {
+          try {
+            final jsonString = reader.result as String;
+            await provider.importBackupJson(jsonString);
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Backup imported successfully!')),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error importing backup: $e')),
+              );
+            }
+          }
+        });
+      }
+    });
   }
 
   Future<void> _createBackup(

@@ -1,3 +1,4 @@
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
@@ -96,6 +97,19 @@ class _SetupScreenState extends State<SetupScreen> {
                               onPressed: _createTournament,
                               icon: const Icon(Icons.add),
                               label: const Text('Create Tournament'),
+                            ),
+                            const SizedBox(height: 8),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Or restore from backup:',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                              onPressed: _importBackupFile,
+                              icon: const Icon(Icons.upload_file),
+                              label: const Text('Import Backup'),
                             ),
                           ],
                         ),
@@ -439,5 +453,38 @@ class _SetupScreenState extends State<SetupScreen> {
         );
       }
     }
+  }
+
+  void _importBackupFile() {
+    final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final uploadInput = html.FileUploadInputElement()..accept = '.json';
+    uploadInput.click();
+
+    uploadInput.onChange.listen((event) {
+      final file = uploadInput.files?.first;
+      if (file != null) {
+        final reader = html.FileReader();
+        reader.readAsText(file);
+
+        reader.onLoadEnd.listen((event) async {
+          try {
+            final jsonString = reader.result as String;
+            await provider.importBackupJson(jsonString);
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Backup imported successfully!')),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error importing backup: $e')),
+              );
+            }
+          }
+        });
+      }
+    });
   }
 }
