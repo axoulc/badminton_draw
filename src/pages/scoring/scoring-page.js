@@ -17,7 +17,11 @@ export class ScoringPage extends HTMLElement {
 
     setTournamentService(service) {
         this.tournamentService = service;
-        this.loadData();
+        // Only load data if the component is properly connected and rendered
+        if (this.isConnected && this.querySelector('#pending-matches-list')) {
+            this.loadData();
+        }
+        // Otherwise, loadData will be called by connectedCallback
     }
 
     loadData() {
@@ -237,6 +241,12 @@ export class ScoringPage extends HTMLElement {
     updateStats() {
         const pendingChip = this.querySelector('#pending-matches-chip');
         const completedChip = this.querySelector('#completed-matches-chip');
+
+        // Check if elements exist before accessing them
+        if (!pendingChip || !completedChip) {
+            console.warn('Scoring stats elements not found, DOM may not be ready');
+            return;
+        }
 
         pendingChip.label = `${this.pendingMatches.length} pending`;
         completedChip.label = `${this.completedMatches.length} completed`;

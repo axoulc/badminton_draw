@@ -15,7 +15,11 @@ export class PlayersPage extends HTMLElement {
 
     setTournamentService(service) {
         this.tournamentService = service;
-        this.loadPlayers();
+        // Only load players if the component is properly connected and rendered
+        if (this.isConnected && this.querySelector('#players-list')) {
+            this.loadPlayers();
+        }
+        // Otherwise, loadPlayers will be called by connectedCallback
     }
 
     loadPlayers() {
@@ -274,6 +278,12 @@ export class PlayersPage extends HTMLElement {
         const listContainer = this.querySelector('#players-list');
         const emptyState = this.querySelector('#empty-state');
 
+        // Check if elements exist before accessing them
+        if (!listContainer || !emptyState) {
+            console.warn('Players list elements not found, DOM may not be ready');
+            return;
+        }
+
         if (this.players.length === 0) {
             emptyState.style.display = 'flex';
             return;
@@ -324,6 +334,12 @@ export class PlayersPage extends HTMLElement {
     updateStats() {
         const totalChip = this.querySelector('#total-players-chip');
         const statusChip = this.querySelector('#tournament-status-chip');
+
+        // Check if elements exist before accessing them
+        if (!totalChip || !statusChip) {
+            console.warn('Stats elements not found, DOM may not be ready');
+            return;
+        }
 
         totalChip.label = `${this.players.length} player${this.players.length !== 1 ? 's' : ''}`;
         

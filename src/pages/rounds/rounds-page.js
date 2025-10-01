@@ -21,7 +21,11 @@ export class RoundsPage extends HTMLElement {
 
     setTournamentService(service) {
         this.tournamentService = service;
-        this.loadData();
+        // Only load data if the component is properly connected and rendered
+        if (this.isConnected && this.querySelector('#rounds-list')) {
+            this.loadData();
+        }
+        // Otherwise, loadData will be called by connectedCallback
     }
 
     startAutoRefresh() {
@@ -163,6 +167,12 @@ export class RoundsPage extends HTMLElement {
         const totalChip = this.querySelector('#total-rounds-chip');
         const currentChip = this.querySelector('#current-round-chip');
 
+        // Check if elements exist before accessing them
+        if (!totalChip || !currentChip) {
+            console.warn('Rounds stats elements not found, DOM may not be ready');
+            return;
+        }
+
         totalChip.label = `${this.rounds.length} round${this.rounds.length !== 1 ? 's' : ''}`;
         
         if (this.currentRound) {
@@ -178,6 +188,12 @@ export class RoundsPage extends HTMLElement {
         const section = this.querySelector('#generate-section');
         const button = this.querySelector('#generate-round-btn');
         const info = this.querySelector('#pairing-info');
+
+        // Check if elements exist before accessing them
+        if (!section || !button || !info) {
+            console.warn('Generate section elements not found, DOM may not be ready');
+            return;
+        }
 
         if (!this.tournamentService) {
             section.style.display = 'none';
@@ -213,6 +229,12 @@ export class RoundsPage extends HTMLElement {
         const matchesContainer = this.querySelector('#current-matches');
         const progressChip = this.querySelector('#matches-progress-chip');
 
+        // Check if elements exist before accessing them
+        if (!section || !title || !matchesContainer || !progressChip) {
+            console.warn('Current round elements not found, DOM may not be ready');
+            return;
+        }
+
         if (!this.currentRound) {
             section.style.display = 'none';
             return;
@@ -232,6 +254,12 @@ export class RoundsPage extends HTMLElement {
     updateRoundsHistory() {
         const historyContainer = this.querySelector('#rounds-history');
         const emptyState = this.querySelector('#history-empty-state');
+
+        // Check if elements exist before accessing them
+        if (!historyContainer || !emptyState) {
+            console.warn('Rounds history elements not found, DOM may not be ready');
+            return;
+        }
 
         const completedRounds = this.rounds.filter(r => r.status === 'completed');
 

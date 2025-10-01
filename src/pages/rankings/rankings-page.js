@@ -23,7 +23,11 @@ export class RankingsPage extends HTMLElement {
 
     setTournamentService(service) {
         this.tournamentService = service;
-        this.loadData();
+        // Only load data if the component is properly connected and rendered
+        if (this.isConnected && this.querySelector('#rankings-list')) {
+            this.loadData();
+        }
+        // Otherwise, loadData will be called by connectedCallback
     }
 
     startAutoRefresh() {
@@ -224,14 +228,25 @@ export class RankingsPage extends HTMLElement {
     }
 
     updateStats() {
-        this.querySelector('#total-players').textContent = this.tournamentStats.totalPlayers || 0;
-        this.querySelector('#total-rounds').textContent = this.tournamentStats.totalRounds || 0;
-        this.querySelector('#total-matches').textContent = this.tournamentStats.totalMatches || 0;
+        const totalPlayersEl = this.querySelector('#total-players');
+        const totalRoundsEl = this.querySelector('#total-rounds');
+        const totalMatchesEl = this.querySelector('#total-matches');
+        const completionRateEl = this.querySelector('#completion-rate');
+
+        // Check if elements exist before accessing them
+        if (!totalPlayersEl || !totalRoundsEl || !totalMatchesEl || !completionRateEl) {
+            console.warn('Rankings stats elements not found, DOM may not be ready');
+            return;
+        }
+
+        totalPlayersEl.textContent = this.tournamentStats.totalPlayers || 0;
+        totalRoundsEl.textContent = this.tournamentStats.totalRounds || 0;
+        totalMatchesEl.textContent = this.tournamentStats.totalMatches || 0;
         
         const completionRate = this.tournamentStats.totalMatches > 0 
             ? Math.round((this.tournamentStats.completedMatches / this.tournamentStats.totalMatches) * 100)
             : 0;
-        this.querySelector('#completion-rate').textContent = `${completionRate}%`;
+        completionRateEl.textContent = `${completionRate}%`;
     }
 
     updateRankings() {

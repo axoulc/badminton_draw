@@ -4,12 +4,10 @@
   "description": "Web-based badminton doubles tournament management system with random pairing and scoring",
   "main": "src/app.js",
   "scripts": {
-    "start": "http-server public -p 3000 -c-1",
-    "dev": "http-server public -p 3000 -c-1 -o",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "build": "npm run copy-src",
-    "copy-src": "cp -r src/* public/",
+    "start": "http-server . -p 3000 -c-1 -o",
+    "dev": "http-server . -p 3000 -c-1",
+    "build": "echo 'No build step needed for this static app'",
+    "test": "echo 'Tests will be added later'",
     "docker:build": "docker build -t badminton-tournament .",
     "docker:run": "docker run -p 8080:80 badminton-tournament"
   },

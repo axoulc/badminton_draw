@@ -14,14 +14,22 @@ class BadmintonTournamentApp extends HTMLElement {
         this.isLoading = false;
     }
 
-    connectedCallback() {
-        this.render();
+    async connectedCallback() {
+        // Prevent multiple initialization if already rendered
+        if (this.hasAttribute('initialized')) {
+            return;
+        }
+        
+        await this.render();
         this.initializeApp();
         this.bindEvents();
         this.loadInitialData();
+        
+        // Mark as initialized to prevent duplicate calls
+        this.setAttribute('initialized', 'true');
     }
 
-    render() {
+    async render() {
         this.innerHTML = `
             <div class="app">
                 <!-- App Header -->
@@ -164,6 +172,77 @@ class BadmintonTournamentApp extends HTMLElement {
                 </footer>
             </div>
         `;
+        
+        // Ensure Material 3 components are properly initialized
+        await this.initializeMaterial3Components();
+    }
+    
+    async initializeMaterial3Components() {
+        console.log('🔄 Initializing Material 3 components...');
+        
+        // Wait for Material 3 components to be defined and upgrade
+        const materialComponents = [
+            'md-icon',
+            'md-icon-button', 
+            'md-tabs',
+            'md-primary-tab',
+            'md-circular-progress',
+            'md-dialog',
+            'md-outlined-text-field',
+            'md-filled-button',
+            'md-text-button',
+            'md-outlined-button',
+            'md-fab',
+            'md-card',
+            'md-list',
+            'md-list-item',
+            'md-checkbox',
+            'md-switch',
+            'md-slider',
+            'md-select',
+            'md-option'
+        ];
+        
+        // Wait for all components to be defined (with timeout per component)
+        const componentPromises = materialComponents.map(component => 
+            Promise.race([
+                customElements.whenDefined(component),
+                new Promise(resolve => setTimeout(resolve, 2000)) // 2s timeout per component
+            ]).catch(() => {
+                console.warn(`⚠️ Component ${component} not available`);
+            })
+        );
+        
+        await Promise.all(componentPromises);
+        console.log('✓ Material 3 component definitions loaded');
+        
+        // Query all Material 3 elements more comprehensively
+        const mdSelectors = materialComponents.join(',');
+        const mdElements = this.querySelectorAll(mdSelectors);
+        console.log(`✓ Found ${mdElements.length} Material 3 elements to upgrade`);
+        
+        // Force upgrade of all Material 3 elements in this component
+        const upgradePromises = Array.from(mdElements).map(async element => {
+            if (element.tagName.toLowerCase().startsWith('md-')) {
+                try {
+                    // Wait for element's updateComplete if it's a lit-element
+                    if (typeof element.updateComplete !== 'undefined') {
+                        await Promise.race([
+                            element.updateComplete,
+                            new Promise(resolve => setTimeout(resolve, 1000))
+                        ]);
+                    }
+                } catch (error) {
+                    // Ignore individual element upgrade errors
+                }
+            }
+        });
+        
+        await Promise.all(upgradePromises);
+        
+        // Additional delay to ensure rendering is complete
+        await new Promise(resolve => setTimeout(resolve, 200));
+        console.log('✓ Material 3 components fully initialized');
     }
 
     initializeApp() {
@@ -270,6 +349,9 @@ class BadmintonTournamentApp extends HTMLElement {
         this.showLoading(true);
         
         try {
+            // Small delay to ensure DOM is fully ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             // Try to load existing tournament
             const existingTournament = this.tournamentService.loadTournament();
             
@@ -328,8 +410,12 @@ class BadmintonTournamentApp extends HTMLElement {
 
     refreshAllPages() {
         Object.values(this.pages).forEach(page => {
-            if (page.loadData) {
-                page.loadData();
+            if (page.loadData && page.isConnected) {
+                try {
+                    page.loadData();
+                } catch (error) {
+                    console.warn(`Failed to load data for page:`, error);
+                }
             }
         });
     }
@@ -552,8 +638,5 @@ class BadmintonTournamentApp extends HTMLElement {
 // Register the custom element
 customElements.define('badminton-tournament-app', BadmintonTournamentApp);
 
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const app = document.createElement('badminton-tournament-app');
-    document.body.appendChild(app);
-});
+// Export the class for use in other modules
+export { BadmintonTournamentApp };
