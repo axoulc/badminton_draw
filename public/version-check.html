@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Version Check - Badminton Tournament Manager</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #6750a4;
+            margin-top: 0;
+        }
+        .version {
+            font-size: 48px;
+            font-weight: bold;
+            color: #6750a4;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #6750a4;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        .button:hover {
+            background: #7965af;
+            box-shadow: 0 4px 12px rgba(103, 80, 164, 0.3);
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎯 Cache Test Page</h1>
+        
+        <div class="version">VERSION 2.0</div>
+        
+        <div class="status success">
+            ✅ <strong>If you can see this page, your browser is loading new files!</strong>
+        </div>
+        
+        <div class="status info">
+            <strong>Current Build Time:</strong><br>
+            <span id="build-time"></span>
+        </div>
+        
+        <h2>What This Means:</h2>
+        <ul>
+            <li>✅ The server is running correctly</li>
+            <li>✅ Your browser CAN load new files from the server</li>
+            <li>✅ The problem is specific to the main index.html being cached</li>
+        </ul>
+        
+        <h2>Next Steps:</h2>
+        <ol>
+            <li>Open your browser's Developer Tools (Press <code>F12</code>)</li>
+            <li>Go to the <strong>Network</strong> tab</li>
+            <li>Check <strong>"Disable cache"</strong> at the top</li>
+            <li>Click the button below to go to the main app</li>
+        </ol>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="index.html" class="button">Go to Main App</a>
+            <a href="index.html?nocache=1" class="button">Go to Main App (with cache buster)</a>
+        </div>
+        
+        <div class="timestamp">
+            This page was generated and is NOT cached.<br>
+            Each reload will show a different timestamp below.
+        </div>
+        
+        <div class="timestamp" style="font-weight: bold; color: #6750a4; margin-top: 10px;">
+            Page Load Time: <span id="load-time"></span>
+        </div>
+    </div>
+    
+    <script>
+        // Show build time
+        document.getElementById('build-time').textContent = new Date().toISOString();
+        
+        // Show page load time
+        document.getElementById('load-time').textContent = new Date().toLocaleString();
+        
+        // Log to console
+        console.log('🔥 VERSION CHECK PAGE LOADED - v2.0');
+        console.log('Build timestamp:', new Date().toISOString());
+        console.log('If you can see this, the server is working correctly!');
+    </script>
+</body>
+</html>

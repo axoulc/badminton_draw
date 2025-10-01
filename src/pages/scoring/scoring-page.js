@@ -175,35 +175,53 @@ export class ScoringPage extends HTMLElement {
 
     bindEvents() {
         // Navigation
-        this.querySelector('#go-to-rounds-btn').addEventListener('click', () => {
-            this.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'rounds' } }));
-        });
+        const goToRoundsBtn = this.querySelector('#go-to-rounds-btn');
+        if (goToRoundsBtn) {
+            goToRoundsBtn.addEventListener('click', () => {
+                this.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'rounds' } }));
+            });
+        }
 
         // Refresh button
-        this.querySelector('#refresh-btn').addEventListener('click', () => {
-            this.loadData();
-            this.showSuccess('Data refreshed');
-        });
+        const refreshBtn = this.querySelector('#refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadData();
+                this.showSuccess('Data refreshed');
+            });
+        }
 
         // Expand/collapse completed matches
-        this.querySelector('#expand-completed-btn').addEventListener('click', () => {
-            this.toggleCompletedMatches();
-        });
+        const expandBtn = this.querySelector('#expand-completed-btn');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', () => {
+                this.toggleCompletedMatches();
+            });
+        }
 
         // Score dialog events
         const scoreDialog = this.querySelector('#score-dialog');
         
-        this.querySelector('#cancel-score-btn').addEventListener('click', () => {
-            scoreDialog.close();
-        });
+        const cancelScoreBtn = this.querySelector('#cancel-score-btn');
+        if (cancelScoreBtn && scoreDialog) {
+            cancelScoreBtn.addEventListener('click', () => {
+                scoreDialog.close();
+            });
+        }
 
-        this.querySelector('#pair1-winner-btn').addEventListener('click', () => {
-            this.showConfirmDialog(1);
-        });
+        const pair1WinnerBtn = this.querySelector('#pair1-winner-btn');
+        if (pair1WinnerBtn) {
+            pair1WinnerBtn.addEventListener('click', () => {
+                this.showConfirmDialog(1);
+            });
+        }
 
-        this.querySelector('#pair2-winner-btn').addEventListener('click', () => {
-            this.showConfirmDialog(2);
-        });
+        const pair2WinnerBtn = this.querySelector('#pair2-winner-btn');
+        if (pair2WinnerBtn) {
+            pair2WinnerBtn.addEventListener('click', () => {
+                this.showConfirmDialog(2);
+            });
+        }
 
         // Confirm dialog events
         const confirmDialog = this.querySelector('#confirm-score-dialog');
@@ -264,8 +282,16 @@ export class ScoringPage extends HTMLElement {
         emptyState.style.display = 'none';
 
         const matchesHTML = this.pendingMatches.map(match => {
-            const pair1Names = `${match.pair1.player1.name} / ${match.pair1.player2.name}`;
-            const pair2Names = `${match.pair2.player1.name} / ${match.pair2.player2.name}`;
+            console.log('🔍 Rendering scoring match:', match);
+            
+            // Defensive checks for player objects
+            const player1Name = match.pair1?.player1?.name || 'Unknown Player';
+            const player2Name = match.pair1?.player2?.name || 'Unknown Player';
+            const player3Name = match.pair2?.player1?.name || 'Unknown Player';
+            const player4Name = match.pair2?.player2?.name || 'Unknown Player';
+            
+            const pair1Names = `${player1Name} / ${player2Name}`;
+            const pair2Names = `${player3Name} / ${player4Name}`;
 
             return `
                 <div class="match-card pending" data-match-id="${match.id}">
@@ -319,24 +345,24 @@ export class ScoringPage extends HTMLElement {
         const matchesHTML = this.completedMatches.map(match => {
             const pair1Names = `${match.pair1.player1.name} / ${match.pair1.player2.name}`;
             const pair2Names = `${match.pair2.player1.name} / ${match.pair2.player2.name}`;
-            const winnerNames = match.winningPair === 1 ? pair1Names : pair2Names;
+            const winnerNames = match.winner === 1 ? pair1Names : pair2Names;
 
             return `
                 <div class="match-card completed" data-match-id="${match.id}">
                     <div class="match-info">
                         <div class="match-pairs">
-                            <div class="pair ${match.winningPair === 1 ? 'winner' : 'loser'}">
+                            <div class="pair ${match.winner === 1 ? 'winner' : 'loser'}">
                                 <md-icon class="pair-icon">people</md-icon>
                                 <span class="pair-names">${pair1Names}</span>
-                                ${match.winningPair === 1 ? '<md-icon class="winner-icon">emoji_events</md-icon>' : ''}
+                                ${match.winner === 1 ? '<md-icon class="winner-icon">emoji_events</md-icon>' : ''}
                             </div>
                             <div class="vs-divider">
                                 <md-icon>close</md-icon>
                             </div>
-                            <div class="pair ${match.winningPair === 2 ? 'winner' : 'loser'}">
+                            <div class="pair ${match.winner === 2 ? 'winner' : 'loser'}">
                                 <md-icon class="pair-icon">people</md-icon>
                                 <span class="pair-names">${pair2Names}</span>
-                                ${match.winningPair === 2 ? '<md-icon class="winner-icon">emoji_events</md-icon>' : ''}
+                                ${match.winner === 2 ? '<md-icon class="winner-icon">emoji_events</md-icon>' : ''}
                             </div>
                         </div>
                         <div class="match-result">
@@ -345,6 +371,10 @@ export class ScoringPage extends HTMLElement {
                         </div>
                     </div>
                     <div class="match-actions">
+                        <md-outlined-button class="reset-btn" data-match-id="${match.id}">
+                            <md-icon slot="icon">undo</md-icon>
+                            Reset
+                        </md-outlined-button>
                         <md-text-button class="details-btn" data-match-id="${match.id}">
                             <md-icon slot="icon">info</md-icon>
                             Details
@@ -356,6 +386,14 @@ export class ScoringPage extends HTMLElement {
 
         listContainer.innerHTML = matchesHTML;
 
+        // Bind reset button events
+        listContainer.querySelectorAll('.reset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const matchId = e.target.closest('[data-match-id]').dataset.matchId;
+                this.resetMatch(matchId);
+            });
+        });
+
         // Bind details button events
         listContainer.querySelectorAll('.details-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -365,19 +403,100 @@ export class ScoringPage extends HTMLElement {
         });
     }
 
-    openScoreDialog(matchId) {
-        const match = this.pendingMatches.find(m => m.id === matchId);
-        if (!match) return;
+    /**
+     * Helper method to properly open Material 3 dialogs
+     * @param {HTMLElement} dialog - The md-dialog element to open
+     * @returns {Promise<boolean>} - True if dialog opened successfully
+     */
+    async openMaterialDialog(dialog) {
+        if (!dialog) {
+            console.error('Dialog element is null');
+            return false;
+        }
 
-        this.selectedMatch = match;
+        try {
+            console.log('Opening Material dialog:', dialog.id);
+            
+            // Wait for md-dialog to be defined if not already
+            if (!customElements.get('md-dialog')) {
+                console.log('Waiting for md-dialog to be defined...');
+                await customElements.whenDefined('md-dialog');
+            }
+            
+            // Give the element a chance to upgrade
+            await new Promise(resolve => setTimeout(resolve, 0));
+            
+            console.log('Dialog methods:', {
+                hasShow: typeof dialog.show,
+                hasOpen: typeof dialog.open,
+                constructor: dialog.constructor.name
+            });
+            
+            // Try to open the dialog
+            if (typeof dialog.show === 'function') {
+                console.log('✅ Opening with show() method');
+                dialog.show();
+                return true;
+            } else {
+                console.warn('⚠️ show() not available, using fallback');
+                dialog.open = true;
+                dialog.setAttribute('open', 'true');
+                return true;
+            }
+        } catch (error) {
+            console.error('Error opening dialog:', error);
+            return false;
+        }
+    }
 
-        const pair1Names = `${match.pair1.player1.name} / ${match.pair1.player2.name}`;
-        const pair2Names = `${match.pair2.player1.name} / ${match.pair2.player2.name}`;
+    async openScoreDialog(matchId) {
+        try {
+            console.log('Opening score dialog for match:', matchId);
+            console.log('Pending matches:', this.pendingMatches);
+            
+            const match = this.pendingMatches.find(m => m.id === matchId);
+            if (!match) {
+                console.error('Match not found:', matchId);
+                this.showError('Match not found');
+                return;
+            }
 
-        this.querySelector('#pair1-names').textContent = pair1Names;
-        this.querySelector('#pair2-names').textContent = pair2Names;
+            console.log('Match found:', match);
+            this.selectedMatch = match;
 
-        this.querySelector('#score-dialog').show();
+            // Check if match has enriched player data
+            if (!match.pair1 || !match.pair1.player1 || !match.pair1.player2) {
+                console.error('Match missing player data:', match);
+                this.showError('Match data is incomplete. Try refreshing the page.');
+                return;
+            }
+
+            const pair1Names = `${match.pair1.player1.name} / ${match.pair1.player2.name}`;
+            const pair2Names = `${match.pair2.player1.name} / ${match.pair2.player2.name}`;
+
+            const pair1NamesEl = this.querySelector('#pair1-names');
+            const pair2NamesEl = this.querySelector('#pair2-names');
+            
+            if (pair1NamesEl) pair1NamesEl.textContent = pair1Names;
+            if (pair2NamesEl) pair2NamesEl.textContent = pair2Names;
+
+            const dialog = this.querySelector('#score-dialog');
+            if (!dialog) {
+                console.error('Score dialog not found');
+                this.showError('Score dialog not found');
+                return;
+            }
+            
+            // Open dialog using helper method
+            const opened = await this.openMaterialDialog(dialog);
+            if (!opened) {
+                this.showError('Failed to open score dialog');
+            }
+            
+        } catch (error) {
+            console.error('Error opening score dialog:', error);
+            this.showError(`Failed to open scoring: ${error.message}`);
+        }
     }
 
     showConfirmDialog(winningPair) {
@@ -412,6 +531,20 @@ export class ScoringPage extends HTMLElement {
             this.showSuccess('Match result recorded successfully');
         } catch (error) {
             this.showError(`Failed to record result: ${error.message}`);
+        }
+    }
+
+    resetMatch(matchId) {
+        if (!confirm('Are you sure you want to reset this match? This will remove the result and move it back to pending matches.')) {
+            return;
+        }
+
+        try {
+            this.tournamentService.resetMatch(matchId);
+            this.loadData();
+            this.showSuccess('Match reset successfully');
+        } catch (error) {
+            this.showError(`Failed to reset match: ${error.message}`);
         }
     }
 

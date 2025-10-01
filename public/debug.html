@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Console - Badminton Tournament</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .debug-panel {
+            background: #252526;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #3e3e42;
+        }
+        h2 {
+            color: #4ec9b0;
+            margin-top: 0;
+        }
+        .log {
+            color: #ce9178;
+            margin: 5px 0;
+        }
+        .success {
+            color: #4ec9b0;
+        }
+        .error {
+            color: #f48771;
+        }
+        .warning {
+            color: #dcdcaa;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        .code {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #3e3e42;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Console - Real-Time App Analysis</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 System Status</h2>
+        <div id="system-status"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>🔥 Console Logs (Live)</h2>
+        <div id="console-logs"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>🧪 Manual Tests</h2>
+        <button onclick="testSettings()">Test Settings Dialog</button>
+        <button onclick="testScoring()">Test Scoring</button>
+        <button onclick="testDataEnrichment()">Test Data Enrichment</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+        <div id="test-results" class="code"></div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>📱 Live App (in iframe)</h2>
+        <p class="warning">⚠️ The app below should be fully functional. Try clicking settings or scoring.</p>
+        <iframe id="app-frame" src="index.html?debug=1"></iframe>
+    </div>
+
+    <script>
+        const systemStatus = document.getElementById('system-status');
+        const consoleLogs = document.getElementById('console-logs');
+        const testResults = document.getElementById('test-results');
+        let logCount = 0;
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addLog(type, ...args) {
+            logCount++;
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleLogs.appendChild(logDiv);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            addLog('success', ...args);
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addLog('error', '❌', ...args);
+            originalError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            addLog('warning', '⚠️', ...args);
+            originalWarn.apply(console, args);
+        };
+
+        // System status
+        function updateSystemStatus() {
+            systemStatus.innerHTML = `
+                <div class="success">✅ Debug page loaded: ${new Date().toLocaleString()}</div>
+                <div class="log">📦 User Agent: ${navigator.userAgent}</div>
+                <div class="log">🌐 URL: ${location.href}</div>
+                <div class="log">📝 Total logs captured: ${logCount}</div>
+            `;
+        }
+
+        updateSystemStatus();
+        setInterval(updateSystemStatus, 1000);
+
+        // Test functions
+        async function testSettings() {
+            testResults.innerHTML = '<div class="log">Testing settings dialog...</div>';
+            
+            try {
+                const frame = document.getElementById('app-frame');
+                const frameWindow = frame.contentWindow;
+                const frameDoc = frame.contentDocument;
+                
+                console.log('🧪 Looking for custom element in iframe...');
+                const app = frameDoc.querySelector('badminton-tournament-app');
+                
+                if (!app) {
+                    testResults.innerHTML += '<div class="error">❌ App element not found!</div>';
+                    return;
+                }
+                
+                console.log('✅ App element found:', app);
+                
+                const settingsBtn = app.querySelector('#settings-btn');
+                if (!settingsBtn) {
+                    testResults.innerHTML += '<div class="error">❌ Settings button not found!</div>';
+                    return;
+                }
+                
+                console.log('✅ Settings button found, clicking...');
+                settingsBtn.click();
+                
+                setTimeout(() => {
+                    const dialog = app.querySelector('#settings-dialog');
+                    if (dialog) {
+                        console.log('✅ Settings dialog exists:', dialog);
+                        console.log('Dialog open?', dialog.open, dialog.hasAttribute('open'));
+                        testResults.innerHTML += `<div class="success">✅ Dialog found! Open: ${dialog.open}</div>`;
+                    } else {
+                        console.error('❌ Settings dialog not found');
+                        testResults.innerHTML += '<div class="error">❌ Dialog element not found</div>';
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Test error:', error);
+                testResults.innerHTML += `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testScoring() {
+            testResults.innerHTML = '<div class="log">Testing scoring system...</div>';
+            
+            try {
+                const frame = document.getElementById('app-frame');
+                const frameDoc = frame.contentDocument;
+                const app = frameDoc.querySelector('badminton-tournament-app');
+                
+                if (!app) {
+                    testResults.innerHTML += '<div class="error">❌ App not found</div>';
+                    return;
+                }
+                
+                // Switch to scoring tab
+                const scoringTab = app.querySelector('[data-tab="scoring"]');
+                if (scoringTab) {
+                    console.log('✅ Clicking scoring tab...');
+                    scoringTab.click();
+                    
+                    setTimeout(() => {
+                        const scoringPage = app.querySelector('scoring-page');
+                        if (scoringPage) {
+                            console.log('✅ Scoring page found:', scoringPage);
+                            console.log('Pending matches:', scoringPage.pendingMatches);
+                            console.log('Completed matches:', scoringPage.completedMatches);
+                            
+                            const scoreBtn = scoringPage.querySelector('.score-btn');
+                            if (scoreBtn) {
+                                testResults.innerHTML += '<div class="success">✅ Score button found!</div>';
+                                console.log('✅ Score button exists, testing click...');
+                                scoreBtn.click();
+                            } else {
+                                testResults.innerHTML += '<div class="warning">⚠️ No score button (no pending matches?)</div>';
+                            }
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                testResults.innerHTML += `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testDataEnrichment() {
+            testResults.innerHTML = '<div class="log">Testing data enrichment...</div>';
+            
+            try {
+                const frame = document.getElementById('app-frame');
+                const frameDoc = frame.contentDocument;
+                const app = frameDoc.querySelector('badminton-tournament-app');
+                
+                if (!app || !app.tournamentService) {
+                    testResults.innerHTML += '<div class="error">❌ App or service not found</div>';
+                    return;
+                }
+                
+                console.log('✅ Tournament service found');
+                const service = app.tournamentService;
+                
+                const players = service.getPlayers();
+                console.log('Players:', players);
+                testResults.innerHTML += `<div class="log">Players count: ${players.length}</div>`;
+                
+                const pendingMatches = service.getPendingMatches();
+                console.log('Pending matches:', pendingMatches);
+                testResults.innerHTML += `<div class="log">Pending matches: ${pendingMatches.length}</div>`;
+                
+                if (pendingMatches.length > 0) {
+                    const match = pendingMatches[0];
+                    console.log('First match structure:', match);
+                    testResults.innerHTML += `<div class="code">${JSON.stringify(match, null, 2)}</div>`;
+                    
+                    if (match.pair1 && match.pair1.player1) {
+                        testResults.innerHTML += '<div class="success">✅ Match data is enriched!</div>';
+                    } else {
+                        testResults.innerHTML += '<div class="error">❌ Match data NOT enriched!</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                testResults.innerHTML += `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function clearLogs() {
+            consoleLogs.innerHTML = '';
+            testResults.innerHTML = '';
+            logCount = 0;
+            console.log('🧹 Logs cleared');
+        }
+
+        // Listen for messages from iframe
+        window.addEventListener('message', (event) => {
+            console.log('📨 Message from iframe:', event.data);
+        });
+
+        // Initial log
+        console.log('🔥 DEBUG CONSOLE INITIALIZED');
+        console.log('👉 Click the test buttons above to diagnose issues');
+        console.log('👉 Or interact with the app in the iframe below');
+    </script>
+</body>
+</html>

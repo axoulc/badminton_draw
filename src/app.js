@@ -15,18 +15,30 @@ class BadmintonTournamentApp extends HTMLElement {
     }
 
     async connectedCallback() {
+        console.log('🎬 BadmintonTournamentApp connectedCallback called');
+        
         // Prevent multiple initialization if already rendered
         if (this.hasAttribute('initialized')) {
+            console.log('⚠️ Already initialized, skipping');
             return;
         }
         
+        console.log('🔄 Starting app initialization...');
         await this.render();
+        console.log('✅ Render complete');
+        
         this.initializeApp();
+        console.log('✅ App initialization complete');
+        
         this.bindEvents();
+        console.log('✅ Event binding complete');
+        
         this.loadInitialData();
+        console.log('✅ Initial data loaded');
         
         // Mark as initialized to prevent duplicate calls
         this.setAttribute('initialized', 'true');
+        console.log('🎉 BadmintonTournamentApp fully initialized');
     }
 
     async render() {
@@ -37,7 +49,7 @@ class BadmintonTournamentApp extends HTMLElement {
                     <div class="header-content">
                         <div class="app-title">
                             <md-icon class="app-icon">sports_tennis</md-icon>
-                            <h1 class="headline-medium">Badminton Tournament</h1>
+                            <h1 class="headline-medium">Badminton Tournament <span style="font-size: 0.6em; color: var(--md-sys-color-primary);">v2.0.2-FIXED</span></h1>
                         </div>
                         <div class="header-actions">
                             <md-icon-button id="save-btn" title="Save Tournament">
@@ -88,6 +100,30 @@ class BadmintonTournamentApp extends HTMLElement {
                 <md-dialog id="settings-dialog">
                     <div slot="headline">Tournament Settings</div>
                     <form slot="content" id="settings-form">
+                        <div class="settings-section">
+                            <h3 class="title-medium">Tournament Mode</h3>
+                            <div class="setting-row">
+                                <label class="body-large">Game Format:</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="tournament-mode" value="singles" id="mode-singles" checked>
+                                        <span>Singles (1 vs 1)</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="tournament-mode" value="doubles" id="mode-doubles">
+                                        <span>Doubles (2 vs 2) - Partners rotate each round</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-info">
+                                <md-icon>info</md-icon>
+                                <span class="body-small">
+                                    In doubles mode, each player will have a different partner every round.
+                                    Make sure you have an even number of players (minimum 4).
+                                </span>
+                            </div>
+                        </div>
+                        
                         <div class="settings-section">
                             <h3 class="title-medium">Scoring</h3>
                             <div class="setting-row">
@@ -165,6 +201,8 @@ class BadmintonTournamentApp extends HTMLElement {
                         <span id="tournament-status">Tournament: Setup</span>
                         <span class="status-separator">•</span>
                         <span id="auto-save-status">Auto-save: On</span>
+                        <span class="status-separator">•</span>
+                        <span class="version-info">v2.0 - Scoring & Doubles Mode</span>
                     </div>
                     <div class="status-actions">
                         <span id="last-saved">Never saved</span>
@@ -245,6 +283,63 @@ class BadmintonTournamentApp extends HTMLElement {
         console.log('✓ Material 3 components fully initialized');
     }
 
+    /**
+     * Helper method to properly open Material 3 dialogs
+     * @param {HTMLElement} dialog - The md-dialog element to open
+     * @returns {Promise<boolean>} - True if dialog opened successfully
+     */
+    async openMaterialDialog(dialog) {
+        console.log('🔧 openMaterialDialog called with:', dialog);
+        if (!dialog) {
+            console.error('❌ Dialog element is null');
+            return false;
+        }
+
+        try {
+            console.log('🎯 Opening Material dialog:', dialog.id, dialog.tagName);
+            
+            // Wait for md-dialog to be defined if not already
+            if (!customElements.get('md-dialog')) {
+                console.log('⏳ Waiting for md-dialog to be defined...');
+                await customElements.whenDefined('md-dialog');
+                console.log('✅ md-dialog is now defined!');
+            } else {
+                console.log('✅ md-dialog already defined');
+            }
+            
+            // Give the element a chance to upgrade
+            await new Promise(resolve => setTimeout(resolve, 0));
+            
+            console.log('Dialog methods:', {
+                hasShow: typeof dialog.show,
+                hasOpen: typeof dialog.open,
+                constructor: dialog.constructor.name
+            });
+            
+            // Try to open the dialog
+            if (typeof dialog.show === 'function') {
+                console.log('✅ Opening with show() method');
+                dialog.show();
+                
+                // Verify dialog opened successfully
+                setTimeout(() => {
+                    const isOpen = dialog.hasAttribute('open') || dialog.open;
+                    console.log('✅ Dialog opened successfully:', isOpen);
+                }, 100);
+                
+                return true;
+            } else {
+                console.warn('⚠️ show() not available, using fallback');
+                dialog.open = true;
+                dialog.setAttribute('open', 'true');
+                return true;
+            }
+        } catch (error) {
+            console.error('Error opening dialog:', error);
+            return false;
+        }
+    }
+
     initializeApp() {
         // Initialize pages
         this.pages = {
@@ -266,51 +361,131 @@ class BadmintonTournamentApp extends HTMLElement {
     bindEvents() {
         // Tab navigation
         const tabs = this.querySelector('#main-tabs');
-        tabs.addEventListener('change', (e) => {
-            const activeTab = e.target.activeTab;
-            const pageMap = {
-                0: 'players',
-                1: 'rounds', 
-                2: 'scoring',
-                3: 'rankings'
-            };
+        if (tabs) {
+            // Material 3 tabs change event
+            tabs.addEventListener('change', (e) => {
+                const activeTab = e.target.activeTab;
+                const pageMap = {
+                    0: 'players',
+                    1: 'rounds', 
+                    2: 'scoring',
+                    3: 'rankings'
+                };
+                
+                const targetPage = pageMap[activeTab];
+                if (targetPage) {
+                    this.navigateToPage(targetPage);
+                }
+            });
             
-            const targetPage = pageMap[activeTab];
-            if (targetPage) {
-                this.navigateToPage(targetPage);
-            }
-        });
+            // Fallback: Add click handlers to individual tabs
+            const individualTabs = this.querySelectorAll('md-primary-tab');
+            individualTabs.forEach((tab, index) => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log(`🔍 Tab ${index} clicked`);
+                    
+                    const pageMap = {
+                        0: 'players',
+                        1: 'rounds', 
+                        2: 'scoring',
+                        3: 'rankings'
+                    };
+                    
+                    const targetPage = pageMap[index];
+                    if (targetPage) {
+                        // Remove active state from all tabs
+                        individualTabs.forEach(t => t.removeAttribute('active'));
+                        // Add active state to clicked tab
+                        tab.setAttribute('active', '');
+                        
+                        console.log(`🎯 Navigating to page: ${targetPage}`);
+                        this.navigateToPage(targetPage);
+                    }
+                });
+            });
+        }
 
         // Header actions
-        this.querySelector('#save-btn').addEventListener('click', () => {
-            this.saveTournament();
-        });
+        const saveBtn = this.querySelector('#save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveTournament();
+            });
+        }
 
-        this.querySelector('#settings-btn').addEventListener('click', () => {
-            this.openSettings();
-        });
+        const settingsBtn = this.querySelector('#settings-btn');
+        console.log('🔍 Settings button element:', settingsBtn);
+        if (settingsBtn) {
+            console.log('✅ Settings button found, adding click listener');
+            console.log('🔬 Button details:', {
+                tagName: settingsBtn.tagName,
+                id: settingsBtn.id,
+                constructor: settingsBtn.constructor.name,
+                hasClickMethod: typeof settingsBtn.click
+            });
+            
+            // Add multiple event listeners to catch any click
+            settingsBtn.addEventListener('click', (e) => {
+                console.log('🔥 Settings button clicked (click event)');
+                console.log('🔧 Event details:', e);
+                console.log('🔧 Calling openSettings()...');
+                this.openSettings();
+            });
+            
+            // Also try mousedown and touch events
+            settingsBtn.addEventListener('mousedown', (e) => {
+                console.log('🖱️ Settings button mousedown');
+            });
+            
+            settingsBtn.addEventListener('touchstart', (e) => {
+                console.log('👆 Settings button touchstart');
+            });
+            
+            // Remove the auto-test since we know the click works
+            
+        } else {
+            console.error('❌ Settings button NOT found in DOM');
+        }
 
         // Settings dialog
-        this.querySelector('#cancel-settings-btn').addEventListener('click', () => {
-            this.querySelector('#settings-dialog').close();
-        });
+        const cancelSettingsBtn = this.querySelector('#cancel-settings-btn');
+        if (cancelSettingsBtn) {
+            cancelSettingsBtn.addEventListener('click', () => {
+                const dialog = this.querySelector('#settings-dialog');
+                this.closeDialog(dialog);
+            });
+        }
 
-        this.querySelector('#save-settings-btn').addEventListener('click', () => {
-            this.saveSettings();
-        });
+        const saveSettingsBtn = this.querySelector('#save-settings-btn');
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', () => {
+                this.saveSettings();
+            });
+        }
 
         // Data management buttons
-        this.querySelector('#export-data-btn').addEventListener('click', () => {
-            this.exportTournament();
-        });
+        const exportBtn = this.querySelector('#export-data-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportTournament();
+            });
+        }
 
-        this.querySelector('#import-data-btn').addEventListener('click', () => {
-            this.querySelector('#import-file-input').click();
-        });
+        const importBtn = this.querySelector('#import-data-btn');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                const fileInput = this.querySelector('#import-file-input');
+                if (fileInput) fileInput.click();
+            });
+        }
 
-        this.querySelector('#import-file-input').addEventListener('change', (e) => {
-            this.importTournament(e.target.files[0]);
-        });
+        const importFileInput = this.querySelector('#import-file-input');
+        if (importFileInput) {
+            importFileInput.addEventListener('change', (e) => {
+                this.importTournament(e.target.files[0]);
+            });
+        }
 
         this.querySelector('#create-backup-btn').addEventListener('click', () => {
             this.createBackup();
@@ -391,6 +566,8 @@ class BadmintonTournamentApp extends HTMLElement {
     navigateToPage(pageId) {
         if (pageId === this.currentPage) return;
         
+        console.log(`🎯 Navigating to page: ${pageId}`);
+        
         // Update tab selection
         const tabMap = {
             'players': 0,
@@ -402,7 +579,25 @@ class BadmintonTournamentApp extends HTMLElement {
         const tabIndex = tabMap[pageId];
         if (tabIndex !== undefined) {
             const tabs = this.querySelector('#main-tabs');
-            tabs.activeTabIndex = tabIndex;
+            const individualTabs = this.querySelectorAll('md-primary-tab');
+            
+            // Try Material 3 way first
+            if (tabs && tabs.activeTabIndex !== undefined) {
+                tabs.activeTabIndex = tabIndex;
+                console.log(`✅ Set Material 3 activeTabIndex to ${tabIndex}`);
+            }
+            
+            // Fallback: manually set active attributes
+            if (individualTabs.length > 0) {
+                individualTabs.forEach((tab, index) => {
+                    if (index === tabIndex) {
+                        tab.setAttribute('active', '');
+                        console.log(`✅ Set tab ${index} as active`);
+                    } else {
+                        tab.removeAttribute('active');
+                    }
+                });
+            }
         }
         
         this.showPage(pageId);
@@ -447,21 +642,52 @@ class BadmintonTournamentApp extends HTMLElement {
         }
     }
 
-    openSettings() {
-        const dialog = this.querySelector('#settings-dialog');
-        const settings = this.tournamentService.getSettings();
-        
-        // Populate current settings
-        this.querySelector('#winner-points').value = settings.winnerPoints;
-        this.querySelector('#loser-points').value = settings.loserPoints;
-        
-        dialog.show();
+    async openSettings() {
+        try {
+            console.log('🚀 openSettings() called');
+            console.log('📍 this context:', this);
+            const dialog = this.querySelector('#settings-dialog');
+            console.log('🔍 Dialog element found:', dialog);
+            
+            if (!dialog) {
+                console.error('Settings dialog not found');
+                return;
+            }
+            
+            const settings = this.tournamentService.getSettings();
+            console.log('Current settings:', settings);
+            
+            // Populate current settings
+            const winnerPointsInput = this.querySelector('#winner-points');
+            const loserPointsInput = this.querySelector('#loser-points');
+            
+            if (winnerPointsInput) winnerPointsInput.value = settings.winnerPoints;
+            if (loserPointsInput) loserPointsInput.value = settings.loserPoints;
+            
+            // Set tournament mode
+            const mode = settings.mode || 'singles';
+            const modeRadio = this.querySelector(`#mode-${mode}`);
+            if (modeRadio) {
+                modeRadio.checked = true;
+            }
+            
+            // Open dialog using helper method
+            const opened = await this.openMaterialDialog(dialog);
+            if (!opened) {
+                this.showError('Failed to open settings dialog');
+            }
+            
+        } catch (error) {
+            console.error('Error opening settings:', error);
+            this.showError(`Failed to open settings: ${error.message}`);
+        }
     }
 
     saveSettings() {
         try {
             const winnerPoints = parseInt(this.querySelector('#winner-points').value);
             const loserPoints = parseInt(this.querySelector('#loser-points').value);
+            const tournamentMode = this.querySelector('input[name="tournament-mode"]:checked').value;
             
             if (winnerPoints <= loserPoints) {
                 this.showError('Winner points must be greater than loser points');
@@ -470,10 +696,11 @@ class BadmintonTournamentApp extends HTMLElement {
             
             this.tournamentService.updateSettings({
                 winnerPoints,
-                loserPoints
+                loserPoints,
+                mode: tournamentMode
             });
             
-            this.querySelector('#settings-dialog').close();
+            this.closeDialog(this.querySelector('#settings-dialog'));
             this.showSuccess('Settings updated successfully');
             this.refreshAllPages();
         } catch (error) {
@@ -626,6 +853,49 @@ class BadmintonTournamentApp extends HTMLElement {
             toast.classList.remove('show');
             setTimeout(() => document.body.removeChild(toast), 300);
         }, type === 'error' ? 4000 : 3000);
+    }
+
+    // Helper method to close all dialogs
+    closeAllDialogs() {
+        const dialogs = this.querySelectorAll('md-dialog');
+        dialogs.forEach(dialog => this.closeDialog(dialog));
+    }
+
+    // Helper method to close dialogs (works with both Material 3 and fallback)
+    closeDialog(dialog) {
+        if (dialog) {
+            console.log('🔧 Closing dialog:', dialog.id);
+            if (typeof dialog.close === 'function') {
+                dialog.close();
+            } else {
+                // Fallback: hide the dialog
+                dialog.style.display = 'none';
+                dialog.removeAttribute('open');
+            }
+        }
+    }
+
+    // Helper method to show dialogs (works with both Material 3 and fallback)
+    async openDialog(dialog) {
+        if (dialog) {
+            console.log('🔧 Opening dialog:', dialog.id);
+            
+            // Close all other dialogs first
+            this.closeAllDialogs();
+            
+            // Small delay to ensure other dialogs are closed
+            await new Promise(resolve => setTimeout(resolve, 10));
+            
+            if (typeof dialog.show === 'function') {
+                dialog.show();
+            } else if (typeof dialog.showModal === 'function') {
+                dialog.showModal();
+            } else {
+                // Fallback: show the dialog
+                dialog.style.display = 'flex';
+                dialog.setAttribute('open', '');
+            }
+        }
     }
 
     escapeHtml(text) {

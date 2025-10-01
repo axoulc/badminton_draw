@@ -135,9 +135,18 @@ export class RoundsPage extends HTMLElement {
 
     bindEvents() {
         // Generate round button
-        this.querySelector('#generate-round-btn').addEventListener('click', () => {
-            this.generateNewRound();
-        });
+        const generateBtn = this.querySelector('#generate-round-btn');
+        console.log('🔍 Generate Round button element:', generateBtn);
+        
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                console.log('🔥 Generate Round button clicked!');
+                this.generateNewRound();
+            });
+            console.log('✅ Generate Round button click handler added');
+        } else {
+            console.error('❌ Generate Round button not found in DOM');
+        }
 
         // Refresh button
         this.querySelector('#refresh-btn').addEventListener('click', () => {
@@ -279,6 +288,9 @@ export class RoundsPage extends HTMLElement {
                     </div>
                     <div class="round-summary">
                         <span class="body-small">${this.formatRoundTime(round.completedAt)}</span>
+                        <md-icon-button class="delete-round-btn" data-round-number="${round.number}" title="Delete Round" onclick="event.stopPropagation()">
+                            <md-icon>delete</md-icon>
+                        </md-icon-button>
                         <md-icon class="expand-icon">expand_more</md-icon>
                     </div>
                 </div>
@@ -289,19 +301,36 @@ export class RoundsPage extends HTMLElement {
         `).join('');
 
         historyContainer.innerHTML = historyHTML;
+        
+        // Bind delete button events
+        historyContainer.querySelectorAll('.delete-round-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const roundNumber = parseInt(e.target.closest('[data-round-number]').dataset.roundNumber);
+                this.deleteRound(roundNumber);
+            });
+        });
     }
 
     renderMatches(matches, isCurrentRound = false) {
         return matches.map(match => {
-            const pair1Names = `${match.pair1.player1.name} / ${match.pair1.player2.name}`;
-            const pair2Names = `${match.pair2.player1.name} / ${match.pair2.player2.name}`;
+            console.log('🔍 Rendering match:', match);
+            
+            // Defensive checks for player objects
+            const player1Name = match.pair1?.player1?.name || 'Unknown Player';
+            const player2Name = match.pair1?.player2?.name || 'Unknown Player';
+            const player3Name = match.pair2?.player1?.name || 'Unknown Player';
+            const player4Name = match.pair2?.player2?.name || 'Unknown Player';
+            
+            const pair1Names = `${player1Name} / ${player2Name}`;
+            const pair2Names = `${player3Name} / ${player4Name}`;
             
             let statusContent = '';
             let cardClass = 'match-card';
             
             if (match.status === 'completed') {
                 cardClass += ' completed';
-                const winnerPair = match.winningPair === 1 ? pair1Names : pair2Names;
+                const winnerPair = match.winner === 1 ? pair1Names : pair2Names;
                 statusContent = `
                     <div class="match-result">
                         <md-icon class="winner-icon">emoji_events</md-icon>
@@ -361,29 +390,30 @@ export class RoundsPage extends HTMLElement {
     }
 
     generateNewRound() {
+        console.log('🚀 generateNewRound() called');
+        
         if (!this.canGenerateNewRound()) {
+            console.log('❌ Cannot generate new round');
             this.showError('Cannot generate new round at this time');
             return;
         }
 
+        console.log('✅ Can generate new round, proceeding...');
+        this.showLoading(true);
+        
         try {
-            // Start tournament if it's in setup
-            const tournament = this.tournamentService.getCurrentTournament();
-            if (tournament.status === 'setup') {
-                this.tournamentService.startTournament();
-            }
-
+            // Generate the new round
+            console.log('🔄 Calling tournamentService.generateRound()...');
             const newRound = this.tournamentService.generateRound();
+            console.log('✅ New round generated:', newRound);
+            
             this.loadData();
             this.showSuccess(`Generated Round ${newRound.number} with ${newRound.matches.length} matches`);
-
-            // Scroll to current round section
-            this.querySelector('#current-round-section').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-            });
         } catch (error) {
+            console.error('❌ Error generating round:', error);
             this.showError(`Failed to generate round: ${error.message}`);
+        } finally {
+            this.showLoading(false);
         }
     }
 
@@ -426,6 +456,20 @@ export class RoundsPage extends HTMLElement {
             toast.classList.remove('show');
             setTimeout(() => document.body.removeChild(toast), 300);
         }, 3000);
+    }
+
+    deleteRound(roundNumber) {
+        if (!confirm(`Are you sure you want to delete Round ${roundNumber}? This will remove all matches and revert player scores from that round.`)) {
+            return;
+        }
+
+        try {
+            this.tournamentService.deleteRound(roundNumber);
+            this.loadData();
+            this.showSuccess(`Round ${roundNumber} deleted successfully`);
+        } catch (error) {
+            this.showError(`Failed to delete round: ${error.message}`);
+        }
     }
 
     showError(message) {

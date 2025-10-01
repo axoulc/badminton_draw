@@ -7,9 +7,11 @@ export class PairingService {
      * Generate random doubles pairings with constraints
      * @param {Player[]} players - Array of active players
      * @param {Round} previousRound - Optional previous round for constraint checking
+     * @param {string} mode - 'singles' or 'doubles'
+     * @param {Round[]} allPreviousRounds - All previous rounds for doubles partner rotation
      * @returns {Match[]} Array of Match objects with pair assignments
      */
-    generatePairings(players, previousRound = null) {
+    generatePairings(players, previousRound = null, mode = 'singles', allPreviousRounds = []) {
         if (!Array.isArray(players) || players.length < 4) {
             throw new Error('Need at least 4 players to generate pairings');
         }
@@ -27,8 +29,23 @@ export class PairingService {
             playersForPairing = playersForPairing.filter(p => p.id !== sittingPlayer.id);
         }
 
+        // Use appropriate pairing strategy based on mode
+        if (mode === 'doubles') {
+            return this.generateDoublesPairings(playersForPairing, allPreviousRounds);
+        } else {
+            return this.generateSinglesPairings(playersForPairing, previousRound);
+        }
+    }
+
+    /**
+     * Generate singles (1v1) pairings
+     * @param {Player[]} players - Array of players
+     * @param {Round} previousRound - Previous round for avoiding repeat matchups
+     * @returns {Match[]} Array of matches
+     */
+    generateSinglesPairings(players, previousRound = null) {
         // Shuffle players randomly
-        const shuffledPlayers = this.shufflePlayers(playersForPairing);
+        const shuffledPlayers = this.shufflePlayers(players);
         
         // Generate pairs and matches with constraint checking
         const matches = this.createMatches(shuffledPlayers, previousRound);
@@ -36,7 +53,7 @@ export class PairingService {
         // Validate the generated pairings
         if (!this.validatePairings(matches, previousRound)) {
             // If validation fails, try regenerating once more
-            const reshuffledPlayers = this.shufflePlayers(playersForPairing);
+            const reshuffledPlayers = this.shufflePlayers(players);
             const newMatches = this.createMatches(reshuffledPlayers, previousRound);
             if (!this.validatePairings(newMatches, previousRound)) {
                 // Accept the pairings even if not perfect (pragmatic approach)
@@ -46,6 +63,118 @@ export class PairingService {
         }
 
         return matches;
+    }
+
+    /**
+     * Generate doubles (2v2) pairings with partner rotation
+     * Ensures each player has a different partner every round
+     * @param {Player[]} players - Array of players
+     * @param {Round[]} allPreviousRounds - All previous rounds to avoid repeat partners
+     * @returns {Match[]} Array of matches
+     */
+    generateDoublesPairings(players, allPreviousRounds = []) {
+        // Build partnership history
+        const partnerHistory = this.buildPartnershipHistory(players, allPreviousRounds);
+        
+        // Try to find valid pairings with unique partners
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        while (attempts < maxAttempts) {
+            attempts++;
+            
+            const shuffledPlayers = this.shufflePlayers(players);
+            const pairs = [];
+            const usedPlayers = new Set();
+            
+            // Create pairs ensuring no repeat partners
+            for (let i = 0; i < shuffledPlayers.length; i++) {
+                if (usedPlayers.has(shuffledPlayers[i].id)) continue;
+                
+                const player1 = shuffledPlayers[i];
+                let partner = null;
+                
+                // Find a partner they haven't played with yet
+                for (let j = i + 1; j < shuffledPlayers.length; j++) {
+                    if (usedPlayers.has(shuffledPlayers[j].id)) continue;
+                    
+                    const player2 = shuffledPlayers[j];
+                    const partnerKey = [player1.id, player2.id].sort().join('-');
+                    
+                    if (!partnerHistory.has(partnerKey)) {
+                        partner = player2;
+                        break;
+                    }
+                }
+                
+                // If no unique partner found, use the least frequent partner
+                if (!partner) {
+                    let minPartnerCount = Infinity;
+                    for (let j = i + 1; j < shuffledPlayers.length; j++) {
+                        if (usedPlayers.has(shuffledPlayers[j].id)) continue;
+                        
+                        const player2 = shuffledPlayers[j];
+                        const partnerKey = [player1.id, player2.id].sort().join('-');
+                        const count = partnerHistory.get(partnerKey) || 0;
+                        
+                        if (count < minPartnerCount) {
+                            minPartnerCount = count;
+                            partner = player2;
+                        }
+                    }
+                }
+                
+                if (partner) {
+                    pairs.push([player1.id, partner.id]);
+                    usedPlayers.add(player1.id);
+                    usedPlayers.add(partner.id);
+                }
+            }
+            
+            // Check if we paired everyone
+            if (pairs.length === players.length / 2) {
+                // Create matches from pairs
+                const shuffledPairs = this.shuffleArray(pairs);
+                const matches = [];
+                
+                for (let i = 0; i < shuffledPairs.length; i += 2) {
+                    if (i + 1 < shuffledPairs.length) {
+                        const match = new Match(shuffledPairs[i], shuffledPairs[i + 1]);
+                        matches.push(match);
+                    }
+                }
+                
+                return matches;
+            }
+        }
+        
+        // Fallback to regular pairing if we can't find perfect rotation
+        console.warn('Could not generate perfect partner rotation, using fallback');
+        return this.generateSinglesPairings(players, null);
+    }
+
+    /**
+     * Build history of partnerships from previous rounds
+     * @param {Player[]} players - All players
+     * @param {Round[]} rounds - Previous rounds
+     * @returns {Map} Map of partner pairs to count
+     */
+    buildPartnershipHistory(players, rounds) {
+        const history = new Map();
+        
+        for (const round of rounds) {
+            for (const match of round.matches) {
+                // Record pair1 partnership
+                const pair1Key = [...match.pair1].sort().join('-');
+                history.set(pair1Key, (history.get(pair1Key) || 0) + 1);
+                
+                // Record pair2 partnership
+                const pair2Key = [...match.pair2].sort().join('-');
+                history.set(pair2Key, (history.get(pair2Key) || 0) + 1);
+            }
+        }
+        
+        return history;
     }
 
     /**

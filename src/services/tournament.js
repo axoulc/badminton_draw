@@ -206,9 +206,16 @@ export class TournamentService {
 
         const activePlayers = this.tournament.getActivePlayers();
         const lastRound = this.tournament.getLastRound();
+        const mode = this.tournament.settings.mode || 'singles';
+        const allRounds = this.tournament.rounds;
         
-        // Generate pairings using PairingService
-        const matches = this.pairingService.generatePairings(activePlayers, lastRound);
+        // Generate pairings using PairingService with tournament mode
+        const matches = this.pairingService.generatePairings(
+            activePlayers, 
+            lastRound, 
+            mode,
+            allRounds
+        );
         
         // Create new round
         const roundNumber = this.tournament.rounds.length + 1;
@@ -240,7 +247,15 @@ export class TournamentService {
         if (!this.tournament) {
             return [];
         }
-        return this.tournament.getRounds();
+        const rounds = this.tournament.getRounds();
+        
+        // Enrich each round's matches with player data
+        return rounds.map(round => {
+            return {
+                ...round,
+                matches: this.enrichMatchesWithPlayers(round.matches)
+            };
+        });
     }
 
     /**
@@ -268,6 +283,32 @@ export class TournamentService {
         }
 
         this.tournament.recordMatchResult(matchId, winningPair);
+        this.autoSave();
+    }
+
+    /**
+     * Reset a completed match back to pending status
+     * @param {string} matchId - Match ID
+     */
+    resetMatch(matchId) {
+        if (!this.tournament) {
+            throw new Error('No tournament available');
+        }
+
+        this.tournament.resetMatch(matchId);
+        this.autoSave();
+    }
+
+    /**
+     * Delete a round and revert all associated scores
+     * @param {number} roundNumber - Round number to delete
+     */
+    deleteRound(roundNumber) {
+        if (!this.tournament) {
+            throw new Error('No tournament available');
+        }
+
+        this.tournament.deleteRound(roundNumber);
         this.autoSave();
     }
 
@@ -305,7 +346,8 @@ export class TournamentService {
      */
     getPendingMatches() {
         const currentRound = this.getCurrentRound();
-        return currentRound ? currentRound.getPendingMatches() : [];
+        const matches = currentRound ? currentRound.getPendingMatches() : [];
+        return this.enrichMatchesWithPlayers(matches);
     }
 
     /**
@@ -314,7 +356,33 @@ export class TournamentService {
      */
     getCompletedMatches() {
         const currentRound = this.getCurrentRound();
-        return currentRound ? currentRound.getCompletedMatches() : [];
+        const matches = currentRound ? currentRound.getCompletedMatches() : [];
+        return this.enrichMatchesWithPlayers(matches);
+    }
+
+    /**
+     * Enrich matches with full player objects for display
+     * @param {Match[]} matches - Array of matches
+     * @returns {Match[]} Matches with enriched player data
+     */
+    enrichMatchesWithPlayers(matches) {
+        return matches.map(match => {
+            // Create an enriched copy of the match
+            const enrichedMatch = { ...match };
+            
+            // Transform pair arrays [id1, id2] to objects with player data
+            enrichedMatch.pair1 = {
+                player1: this.getPlayer(match.pair1[0]),
+                player2: this.getPlayer(match.pair1[1])
+            };
+            
+            enrichedMatch.pair2 = {
+                player1: this.getPlayer(match.pair2[0]),
+                player2: this.getPlayer(match.pair2[1])
+            };
+            
+            return enrichedMatch;
+        });
     }
 
     // Rankings and Statistics

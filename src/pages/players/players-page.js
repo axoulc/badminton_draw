@@ -10,16 +10,21 @@ export class PlayersPage extends HTMLElement {
     connectedCallback() {
         this.render();
         this.bindEvents();
-        this.loadPlayers();
+        
+        // Ensure DOM is ready before loading players
+        setTimeout(() => {
+            this.loadPlayers();
+        }, 50);
     }
 
     setTournamentService(service) {
         this.tournamentService = service;
-        // Only load players if the component is properly connected and rendered
-        if (this.isConnected && this.querySelector('#players-list')) {
-            this.loadPlayers();
+        // Force a refresh when tournament service is set
+        if (this.isConnected) {
+            setTimeout(() => {
+                this.loadPlayers();
+            }, 10);
         }
-        // Otherwise, loadPlayers will be called by connectedCallback
     }
 
     loadPlayers() {
@@ -130,7 +135,7 @@ export class PlayersPage extends HTMLElement {
         const editForm = this.querySelector('#edit-player-form');
         
         this.querySelector('#cancel-edit-btn').addEventListener('click', () => {
-            editDialog.close();
+            this.closeDialog(editDialog);
         });
         
         this.querySelector('#save-edit-btn').addEventListener('click', () => {
@@ -146,7 +151,7 @@ export class PlayersPage extends HTMLElement {
         const deleteDialog = this.querySelector('#delete-player-dialog');
         
         this.querySelector('#cancel-delete-btn').addEventListener('click', () => {
-            deleteDialog.close();
+            this.closeDialog(deleteDialog);
         });
         
         this.querySelector('#confirm-delete-btn').addEventListener('click', () => {
@@ -154,9 +159,110 @@ export class PlayersPage extends HTMLElement {
         });
     }
 
-    addPlayer() {
+    // Helper method to close all dialogs in this page
+    closeAllDialogs() {
+        const dialogs = this.querySelectorAll('md-dialog');
+        dialogs.forEach(dialog => this.closeDialog(dialog));
+    }
+
+    // Helper method to close dialogs (works with both Material 3 and fallback)
+    closeDialog(dialog) {
+        if (dialog) {
+            console.log('🔧 Closing dialog:', dialog.id);
+            if (typeof dialog.close === 'function') {
+                dialog.close();
+            } else {
+                // Fallback: hide the dialog
+                dialog.style.display = 'none';
+                dialog.removeAttribute('open');
+            }
+        }
+    }
+
+    // Helper method to show dialogs (works with both Material 3 and fallback)  
+    async openDialog(dialog) {
+        if (dialog) {
+            console.log('🔧 Opening dialog:', dialog.id);
+            
+            // Close all other dialogs first
+            this.closeAllDialogs();
+            
+            // Small delay to ensure other dialogs are closed
+            await new Promise(resolve => setTimeout(resolve, 10));
+            
+            if (typeof dialog.show === 'function') {
+                dialog.show();
+            } else if (typeof dialog.showModal === 'function') {
+                dialog.showModal();
+            } else {
+                // Fallback: show the dialog
+                dialog.style.display = 'flex';
+                dialog.setAttribute('open', '');
+            }
+        }
+    }
+
+    async addPlayer() {
         const nameInput = this.querySelector('#player-name-input');
-        const name = nameInput.value.trim();
+        console.log('🔍 Name input element:', nameInput);
+        
+        if (!nameInput) {
+            console.error('❌ Player name input not found');
+            this.showError('Input field not found. Please try refreshing the page.');
+            return;
+        }
+        
+        // Material 3 text fields use different properties to get value
+        let inputValue;
+        
+        // Wait for the component to be fully defined if it's still initializing
+        if (nameInput.tagName.toLowerCase() === 'md-outlined-text-field') {
+            await customElements.whenDefined('md-outlined-text-field').catch(() => {
+                console.warn('Material 3 text field not fully loaded, trying anyway...');
+            });
+        }
+        
+        // Try multiple ways to get the value from Material 3 text field
+        if (nameInput.value !== undefined && nameInput.value !== null) {
+            inputValue = nameInput.value;
+            console.log('✅ Got value from .value property:', inputValue);
+        } else if (nameInput.getAttribute && nameInput.getAttribute('value')) {
+            inputValue = nameInput.getAttribute('value');
+            console.log('✅ Got value from value attribute:', inputValue);
+        } else {
+            // Try to find the internal input element (Material 3 components often have nested inputs)
+            const internalInput = nameInput.querySelector('input');
+            if (internalInput && internalInput.value !== undefined) {
+                inputValue = internalInput.value;
+                console.log('✅ Got value from internal input element:', inputValue);
+            } else {
+                // Final fallback - check for any input-like elements
+                const inputElements = nameInput.querySelectorAll('input, textarea');
+                if (inputElements.length > 0) {
+                    inputValue = inputElements[0].value;
+                    console.log('✅ Got value from nested input element:', inputValue);
+                } else {
+                    console.error('❌ Could not get value from Material 3 text field');
+                    console.log('🔍 Element tagName:', nameInput.tagName);
+                    console.log('🔍 Element innerHTML:', nameInput.innerHTML);
+                    console.log('🔍 Available properties:', Object.getOwnPropertyNames(nameInput));
+                    this.showError('Please enter a player name in the text field');
+                    nameInput.focus();
+                    return;
+                }
+            }
+        }
+        
+        console.log('🔍 Final input value:', inputValue);
+        
+        if (inputValue === undefined || inputValue === null || inputValue === '') {
+            console.error('❌ Input value is empty or invalid');
+            this.showError('Please enter a player name');
+            nameInput.focus();
+            return;
+        }
+        
+        const name = inputValue.trim();
 
         if (!name) {
             this.showError('Please enter a player name');
@@ -181,7 +287,7 @@ export class PlayersPage extends HTMLElement {
         }
     }
 
-    editPlayer(playerId) {
+    async editPlayer(playerId) {
         const player = this.players.find(p => p.id === playerId);
         if (!player) return;
 
@@ -190,7 +296,7 @@ export class PlayersPage extends HTMLElement {
         const nameInput = this.querySelector('#edit-player-name');
         
         nameInput.value = player.name;
-        dialog.show();
+        await this.openDialog(dialog);
         
         // Focus and select name for easy editing
         setTimeout(() => {
@@ -228,7 +334,7 @@ export class PlayersPage extends HTMLElement {
         }
     }
 
-    deletePlayer(playerId) {
+    async deletePlayer(playerId) {
         const player = this.players.find(p => p.id === playerId);
         if (!player) return;
 
@@ -237,7 +343,7 @@ export class PlayersPage extends HTMLElement {
         const nameSpan = this.querySelector('#delete-player-name');
         
         nameSpan.textContent = player.name;
-        dialog.show();
+        await this.openDialog(dialog);
     }
 
     confirmDeletePlayer() {
@@ -245,7 +351,7 @@ export class PlayersPage extends HTMLElement {
 
         try {
             this.tournamentService.removePlayer(this.playerToDelete.id);
-            this.querySelector('#delete-player-dialog').close();
+            this.closeDialog(this.querySelector('#delete-player-dialog'));
             this.playerToDelete = null;
             this.loadPlayers();
             this.showSuccess('Player removed from tournament');
@@ -278,11 +384,28 @@ export class PlayersPage extends HTMLElement {
         const listContainer = this.querySelector('#players-list');
         const emptyState = this.querySelector('#empty-state');
 
+        console.log('🔍 Updating players list, player count:', this.players.length);
+        console.log('🔍 Players data:', this.players);
+
         // Check if elements exist before accessing them
         if (!listContainer || !emptyState) {
-            console.warn('Players list elements not found, DOM may not be ready');
+            console.warn('Players list elements not found, DOM may not be ready. Retrying...');
+            // Retry up to 5 times with increasing delays
+            if (!this.retryCount) this.retryCount = 0;
+            
+            if (this.retryCount < 5) {
+                this.retryCount++;
+                setTimeout(() => {
+                    this.updatePlayersList();
+                }, 100 * this.retryCount);
+            } else {
+                console.error('❌ Failed to find players list elements after 5 retries');
+            }
             return;
         }
+        
+        // Reset retry count on success
+        this.retryCount = 0;
 
         if (this.players.length === 0) {
             emptyState.style.display = 'flex';

@@ -13,7 +13,8 @@ export class Tournament {
         this.createdAt = new Date();
         this.settings = {
             winnerPoints: 2,
-            loserPoints: 1
+            loserPoints: 1,
+            mode: 'singles' // 'singles' or 'doubles'
         };
     }
 
@@ -214,6 +215,91 @@ export class Tournament {
 
         // Update round state
         currentRound.recordMatchResult(matchId, winningPair);
+    }
+
+    resetMatch(matchId) {
+        const currentRound = this.getCurrentRound();
+        if (!currentRound) {
+            throw new Error('No active round to reset match');
+        }
+
+        const match = currentRound.getMatchById(matchId);
+        if (!match) {
+            throw new Error('Match not found in current round');
+        }
+
+        if (match.status !== 'completed') {
+            throw new Error('Only completed matches can be reset');
+        }
+
+        // Get player IDs before resetting
+        const winningPairIds = match.getWinningPair();
+        const losingPairIds = match.getLosingPair();
+
+        // Revert player scores
+        winningPairIds.forEach(playerId => {
+            const player = this.getPlayer(playerId);
+            if (player) {
+                player.addScore(-this.settings.winnerPoints);
+            }
+        });
+
+        losingPairIds.forEach(playerId => {
+            const player = this.getPlayer(playerId);
+            if (player) {
+                player.addScore(-this.settings.loserPoints);
+            }
+        });
+
+        // Reset the match
+        match.reset();
+    }
+
+    deleteRound(roundNumber) {
+        const roundIndex = this.rounds.findIndex(r => r.number === roundNumber);
+        
+        if (roundIndex === -1) {
+            throw new Error(`Round ${roundNumber} not found`);
+        }
+
+        const round = this.rounds[roundIndex];
+
+        // Revert scores for all completed matches in this round
+        for (const match of round.matches) {
+            if (match.status === 'completed') {
+                const winningPairIds = match.getWinningPair();
+                const losingPairIds = match.getLosingPair();
+
+                winningPairIds.forEach(playerId => {
+                    const player = this.getPlayer(playerId);
+                    if (player) {
+                        player.addScore(-this.settings.winnerPoints);
+                    }
+                });
+
+                losingPairIds.forEach(playerId => {
+                    const player = this.getPlayer(playerId);
+                    if (player) {
+                        player.addScore(-this.settings.loserPoints);
+                    }
+                });
+            }
+        }
+
+        // Remove the round
+        this.rounds.splice(roundIndex, 1);
+
+        // Renumber remaining rounds
+        for (let i = roundIndex; i < this.rounds.length; i++) {
+            this.rounds[i].number = i + 1;
+        }
+
+        // Update current round if necessary
+        if (this.currentRound === roundNumber) {
+            this.currentRound = this.rounds.length > 0 ? this.rounds[this.rounds.length - 1].number : null;
+        } else if (this.currentRound > roundNumber) {
+            this.currentRound--;
+        }
     }
 
     // Rankings and statistics
