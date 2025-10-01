@@ -1,70 +1,139 @@
-# 🎾 Badminton Tournament Manager
+# 🏸 Badminton Tournament Manager
 
-A modern, cross-platform application for managing badminton tournaments (singles & doubles) with random pairing, live scoring, and real-time rankings.
+A modern, web-based tournament management system for badminton competitions. Built with Flutter for seamless cross-platform support.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?style=flat-square&logo=flutter)
-![Material 3](https://img.shields.io/badge/Material%203-Design-6750A4?style=flat-square)
-![Web](https://img.shields.io/badge/Platform-Web-4285F4?style=flat-square)
-![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square)
-![No Backend](https://img.shields.io/badge/Backend-None%20Required-00C853?style=flat-square)
+[![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.9.2+-0175C2?logo=dart)](https://dart.dev)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Technical Specifications](#-technical-specifications)
+- [Getting Started](#-getting-started)
+- [Compilation](#-compilation)
+- [Docker Deployment](#-docker-deployment)
+- [Documentation](#-documentation)
+- [Usage Guide](#-usage-guide)
 
 ## ✨ Features
 
-### 🏆 **Tournament Management**
-- **Tournament Modes**: Singles (1v1) or Doubles (2v2) tournament support
-- **Player Management**: Add, edit, remove players with duplicate validation
-- **Random Pairing**: Fisher-Yates shuffle algorithm with smart constraints
-- **Live Scoring**: Simple winner selection with +2/+1 point system
-- **Real-time Rankings**: Dynamic leaderboard with win rates and statistics
-- **Tournament Lifecycle**: Setup → Active → Complete workflow
+### Core Functionality
 
-### 🎨 **Modern UI/UX**
-- **Material 3 Design**: Latest Google design system with Flutter
-- **Responsive Layout**: Works on desktop, tablet, and mobile
-- **Dark Mode Support**: Respects system preferences
-- **Native Performance**: Smooth animations and transitions
-- **Accessibility**: ARIA labels and keyboard navigation
+- **🎯 Tournament Modes**
+  - Singles (1v1) matches
+  - Doubles (2v2) matches
+  
+- **👥 Player Management**
+  - Add/remove players individually
+  - Bulk import via JSON
+  - Duplicate detection
+  - Player statistics tracking
 
-### 💾 **Data Management**
-- **Local Storage**: No backend required, data persists locally
-- **Auto-save**: Automatic saving with Flutter persistence
-- **Backup/Restore**: Create and restore tournament snapshots
-- **Export/Import**: JSON data exchange for sharing tournaments
+- **🔄 Smart Pairing Algorithm**
+  - Swiss-system inspired pairing
+  - Minimizes repeated matchups
+  - Balanced match distribution
+  - Automatic round generation
 
-### 🚀 **Cross-Platform**
-- **Web**: Progressive Web App ready
-- **Android**: Native Android application
-- **Offline Capable**: Works without internet connection
+- **📊 Rankings & Statistics**
+  - Real-time leaderboard
+  - Win/loss records
+  - Points calculation
+  - Participation tracking
 
-## 🏗️ **Architecture**
+- **⚙️ Customization**
+  - Configurable scoring system (winner/loser points)
+  - Tournament status management
+  - Match result editing
+  - Round reset capability
 
-Built with **Flutter** for cross-platform development:
+### Advanced Features
 
-- **Functional-First**: Every feature works reliably
-- **Pragmatic**: "Good enough" solutions over perfection  
-- **Simple**: Clean, maintainable code without over-engineering
-- **Cross-Platform**: Single codebase for web and Android
+- **💾 Backup & Restore**
+  - Export complete tournament as JSON
+  - Import from backup file
+  - Cross-device compatibility
+  - Tournament sharing
 
-### **Tech Stack**
-- **Framework**: Flutter 3.9.2+ with Dart
-- **UI**: Material 3 Design System
-- **State Management**: Provider (ChangeNotifier pattern)
-- **Storage**: SharedPreferences for local persistence
-- **Platforms**: Web + Android (iOS and Desktop ready)
+- **📱 Responsive Design**
+  - Material Design 3
+  - Light/Dark theme support
+  - Mobile-friendly interface
+  - Progressive Web App ready
 
-## 🚀 **Getting Started**
+- **🔒 Data Persistence**
+  - Local storage (browser-based)
+  - Automatic save on changes
+  - No server required
+
+## 🔧 Technical Specifications
+
+### Technology Stack
+
+- **Framework**: Flutter 3.9.2+
+- **Language**: Dart 3.9.2+
+- **State Management**: Provider pattern
+- **Storage**: SharedPreferences (browser localStorage)
+- **UI**: Material Design 3
+
+### Project Structure
+
+```
+lib/
+├── main.dart                    # Application entry point
+├── models/                      # Data models
+│   ├── player.dart             # Player model
+│   ├── match.dart              # Match model
+│   ├── round.dart              # Round model
+│   └── tournament.dart         # Tournament model
+├── providers/                   # State management
+│   └── tournament_provider.dart
+├── screens/                     # UI screens
+│   ├── home_screen.dart        # Main navigation
+│   ├── setup_screen.dart       # Tournament creation
+│   ├── players_screen.dart     # Player management
+│   ├── rounds_screen.dart      # Match scoring
+│   ├── rankings_screen.dart    # Leaderboard
+│   └── settings_screen.dart    # Configuration
+└── services/                    # Business logic
+    ├── tournament_service.dart # Tournament operations
+    ├── pairing_service.dart    # Match pairing algorithm
+    └── storage_service.dart    # Data persistence
+```
+
+### Key Dependencies
+
+```yaml
+dependencies:
+  provider: ^6.1.2           # State management
+  shared_preferences: ^2.2.3 # Local storage
+  uuid: ^4.4.0               # Unique ID generation
+```
+
+### Pairing Algorithm
+
+The tournament uses a sophisticated Swiss-system inspired algorithm:
+
+1. Sorts players by points (descending)
+2. Finds valid pairings based on match history
+3. Minimizes repeated matchups
+4. Handles odd player counts (bye system)
+5. Supports both singles and doubles formats
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK 3.9.2 or higher
-- Dart SDK (included with Flutter)
-- For Android: Android Studio + Android SDK
-- For Web: Chrome browser
+
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) 3.9.2 or higher
+- Chrome, Edge, or Firefox browser (for web)
+- Git
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/badminton_draw.git
+   git clone https://github.com/axoulc/badminton_draw.git
    cd badminton_draw
    ```
 
@@ -73,332 +142,303 @@ Built with **Flutter** for cross-platform development:
    flutter pub get
    ```
 
-3. **Run on Web**
+3. **Run the application**
    ```bash
-   flutter run -d chrome
-   ```
-
-4. **Run on Android**
-   ```bash
-   flutter run -d android
-   ```
-
-5. **Build for production**
-   ```bash
-   # Web
-   flutter build web --release
+   # For web (Chrome)
+   flutter run -d chrome --web-port 8080
    
-   # Android APK
-   flutter build apk --release
-   
-   # Android App Bundle
-   flutter build appbundle --release
+   # For specific browser
+   flutter run -d edge
+   flutter run -d firefox
    ```
 
-## 📱 **Usage**
-
-### Starting a Tournament
-1. Launch the app
-2. Choose tournament mode: Singles (1v1) or Doubles (2v2)
-3. Add players using the "Add Player" button
-4. Once players are added, tap "Generate Round" to create matches
-
-### During Tournament
-- **Score Matches**: Tap on a match to select the winner
-- **View Rankings**: Check real-time standings in the Rankings tab
-- **Generate Rounds**: Create new rounds as matches complete
-
-### Tournament Completion
-- View final rankings
-- Export tournament data (JSON format)
-- Start a new tournament or restore from backup
-- **Deployment**: Docker + nginx
-- **Testing**: Jest (for critical business logic only)
-
-### **Project Structure**
-```
-src/
-├── models/          # Data entities (Player, Tournament, etc.)
-├── services/        # Business logic (Pairing, Storage, etc.)
-├── pages/           # UI components (Players, Scoring, etc.)
-└── app.js          # Main application shell
-
-public/
-├── index.html      # Entry point
-└── ...
-
-specs/              # Technical specifications
-.specify/           # Development artifacts
-Dockerfile          # Container deployment
-```
-
-## 🚀 **Quick Start**
-
-### **Option 1: Local Development**
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/axoulc/badminton_draw.git
-   cd badminton_draw
+4. **Access the application**
+   ```
+   http://localhost:8080
    ```
 
-2. **Serve the files** (choose one method)
-   
-   **Using Python:**
-   ```bash
-   # Python 3
-   python -m http.server 8000 --directory public
-   
-   # Python 2
-   python -m SimpleHTTPServer 8000
-   ```
-   
-   **Using Node.js:**
-   ```bash
-   npx serve public -p 8000
-   ```
-   
-   **Using Live Server (VS Code extension):**
-   - Open project in VS Code
-   - Right-click on `public/index.html`
-   - Select "Open with Live Server"
+## 🔨 Compilation
 
-3. **Open in browser**
-   ```
-   http://localhost:8000
-   ```
+### Development Build
 
-### **Option 2: Docker Deployment**
-
-1. **Build the container**
-   ```bash
-   docker build -t badminton-tournament .
-   ```
-
-2. **Run the container**
-   ```bash
-   docker run -d -p 8000:80 --name tournament badminton-tournament
-   ```
-
-3. **Access the application**
-   ```
-   http://localhost:8000
-   ```
-
-## 📱 **How to Use**
-
-### **1. Add Players**
-- Navigate to the **Players** tab
-- Enter player names (minimum 4 required)
-- Edit or remove players as needed
-
-### **2. Generate Rounds**
-- Go to the **Rounds** tab
-- Click **Generate Round** to create random pairings
-- Algorithm prevents consecutive same partnerships
-
-### **3. Score Matches**
-- Switch to the **Scoring** tab
-- Click **Score Match** for each game
-- Select winning pair (winner gets +2, loser gets +1)
-
-### **4. View Rankings**
-- Check the **Rankings** tab for live leaderboard
-- Sort by points, matches played, or win rate
-- Export results to CSV
-
-### **5. Manage Data**
-- Use **Settings** (⚙️) for tournament configuration
-- **Export** tournament data for backup
-- **Import** previous tournaments to continue
-
-## 🔧 **Configuration**
-
-### **Scoring System**
-- **Winner Points**: Default 2 (configurable 1-10)
-- **Loser Points**: Default 1 (configurable 0-9)
-- Access via Settings → Scoring
-
-### **Data Persistence**
-- **Auto-save**: Every 30 seconds (can be disabled)
-- **Manual Save**: Click save button (💾) in header
-- **Backups**: Create named backups anytime
-- **Storage**: Browser localStorage (~5-10MB limit)
-
-## 🐳 **Docker Deployment**
-
-### **Production Deployment**
-
-1. **Build for production**
-   ```bash
-   docker build -t badminton-tournament:latest .
-   ```
-
-2. **Run with restart policy**
-   ```bash
-   docker run -d \
-     --name badminton-tournament \
-     --restart unless-stopped \
-     -p 80:80 \
-     badminton-tournament:latest
-   ```
-
-### **Development with Volume Mounting**
 ```bash
-docker run -d \
-  --name badminton-dev \
-  -p 8000:80 \
-  -v $(pwd)/public:/usr/share/nginx/html \
-  -v $(pwd)/src:/usr/share/nginx/html/src \
-  nginx:alpine
+# Web development build with hot reload
+flutter run -d chrome
+
+# With custom port
+flutter run -d chrome --web-port 8080
 ```
 
-### **Environment Variables**
+### Production Build
+
 ```bash
-# Optional: Custom nginx configuration
-docker run -d \
-  -p 80:80 \
-  -e NGINX_HOST=tournament.example.com \
-  -e NGINX_PORT=80 \
-  badminton-tournament:latest
+# Build optimized web application
+flutter build web --release --web-renderer html
+
+# Output directory: build/web/
+# Files are ready to deploy to any static hosting
 ```
 
-## 🔧 **Development**
+### Build Options
 
-### **Prerequisites**
-- Modern web browser (Chrome 90+, Firefox 88+, Safari 14+)
-- Web server for local development
-- Docker (optional, for containerized deployment)
-
-### **Development Workflow**
-
-1. **Install development tools** (optional)
-   ```bash
-   npm install  # For testing with Jest
-   ```
-
-2. **Run tests** (critical business logic only)
-   ```bash
-   npm test
-   ```
-
-3. **Serve locally**
-   ```bash
-   npm start  # Uses Python http.server
-   ```
-
-4. **Build Docker image**
-   ```bash
-   npm run docker:build
-   npm run docker:run
-   ```
-
-### **Code Style**
-- ES2022 JavaScript modules
-- Material 3 design tokens
-- Functional programming patterns
-- Comprehensive JSDoc comments
-
-## 🧪 **Testing**
-
-Following **pragmatic testing** principles:
-
-### **What's Tested**
-- ✅ **Core Business Logic**: Pairing algorithms, scoring calculations
-- ✅ **Data Validation**: Player/tournament state management
-- ✅ **Storage Operations**: localStorage persistence and recovery
-
-### **What's NOT Tested**
-- ❌ UI interactions (manual testing preferred)
-- ❌ CSS styling (visual inspection)
-- ❌ Simple getters/setters
-
-### **Run Tests**
 ```bash
-npm test                    # Run all tests
-npm test -- --watch        # Watch mode
-npm test -- --coverage     # Coverage report
+# HTML renderer (better compatibility, smaller size)
+flutter build web --release --web-renderer html
+
+# CanvasKit renderer (better performance, larger size)
+flutter build web --release --web-renderer canvaskit
 ```
 
-## 📊 **Browser Support**
+### Code Quality
 
-### **Modern Browsers** (Material 3 Web Components)
-- ✅ Chrome 90+ (recommended)
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
+```bash
+# Run static analysis
+flutter analyze
 
-### **Features**
-- ✅ ES2022 modules
-- ✅ Web Components
-- ✅ localStorage
-- ✅ CSS Grid/Flexbox
-- ✅ Dark mode detection
+# Format code
+flutter format lib/
 
-## 🤝 **Contributing**
+# Run tests
+flutter test
+```
 
-This project follows **frugal development principles**:
+## 🐳 Docker Deployment
 
-1. **Keep it simple** - No over-engineering
-2. **Functional first** - Features must work reliably
-3. **Pragmatic testing** - Test critical paths only
-4. **Minimal dependencies** - Avoid unnecessary packages
+The project includes a production-ready Dockerfile using the official Cirrus Labs Flutter image.
 
-### **Development Process**
+### Quick Start
+
+**Build Docker image:**
+```bash
+docker build -t badminton-tournament .
+```
+
+**Run container:**
+```bash
+docker run -d -p 8080:80 --name badminton badminton-tournament
+```
+
+**Access application:**
+```
+http://localhost:8080
+```
+
+### Docker Configuration
+
+- **Build Image**: `ghcr.io/cirruslabs/flutter:3.35.5`
+- **Runtime Image**: `nginx:alpine`
+- **Exposed Port**: 80
+- **Final Image Size**: ~50MB
+
+### Docker Compose (Optional)
+
+Create `docker-compose.yml`:
+```yaml
+version: '3.8'
+services:
+  badminton:
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+```
+
+Run with:
+```bash
+docker-compose up -d
+```
+
+### Cloud Deployment with Docker
+
+**Google Cloud Run:**
+```bash
+gcloud builds submit --tag gcr.io/PROJECT-ID/badminton
+gcloud run deploy badminton --image gcr.io/PROJECT-ID/badminton --platform managed
+```
+
+**AWS ECS/Fargate:**
+```bash
+aws ecr create-repository --repository-name badminton
+docker tag badminton-tournament:latest AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/badminton:latest
+docker push AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/badminton:latest
+```
+
+**Azure Container Instances:**
+```bash
+az acr create --resource-group myResourceGroup --name myRegistry --sku Basic
+az acr build --registry myRegistry --image badminton:latest .
+az container create --resource-group myResourceGroup --name badminton --image myRegistry.azurecr.io/badminton:latest --dns-name-label badminton --ports 80
+```
+
+## 📚 Documentation
+
+- **[NEW_FEATURES.md](NEW_FEATURES.md)** - Recently added features and detailed usage
+- **[BACKUP_RESTORE.md](BACKUP_RESTORE.md)** - Complete backup/restore guide
+- **[DOCKER.md](DOCKER.md)** - Docker deployment instructions
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+
+## 🎮 Usage Guide
+
+### Creating a Tournament
+
+1. Open the application in your browser
+2. Enter tournament details:
+   - **Name**: e.g., "Summer Championship 2025"
+   - **Mode**: Choose Singles (1v1) or Doubles (2v2)
+3. Add players:
+   - **Manually**: Click "Add Player" and enter names
+   - **Bulk Import**: Click "Import Players (JSON)" and paste:
+     ```json
+     ["Alice", "Bob", "Charlie", "David"]
+     ```
+4. Click **"Start Tournament"** when you have minimum players:
+   - Singles: 4 players minimum
+   - Doubles: 8 players minimum (4 teams)
+
+### Running Rounds
+
+1. **Generate Round**: Click "Generate Round" button
+2. **Record Results**: Tap on the winning team for each match
+3. **Edit Results**: Click edit icon (✏️) to change winner if needed
+4. **View Rankings**: Check the Rankings tab for real-time standings
+5. **Continue**: Generate next round when all matches are complete
+
+### Managing Your Tournament
+
+**Settings:**
+- Adjust winner points (default: 2)
+- Adjust loser points (default: 1)
+- Changes apply to future matches only
+
+**Backup & Restore:**
+- **Export**: Menu → "Export Backup" (saves JSON file)
+- **Import**: Menu → "Import Backup" (restores tournament)
+
+**Tournament Actions:**
+- **Reset**: Clear all rounds but keep players
+- **Delete**: Remove entire tournament
+
+### Scoring System
+
+Default scoring:
+- **Winner**: 2 points
+- **Loser**: 1 point
+
+Configurable in Settings menu.
+
+## 🌐 Static Hosting Deployment
+
+The built application can be deployed to any static hosting service:
+
+### Netlify
+
+```bash
+flutter build web --release
+# Deploy build/web/ directory via Netlify dashboard or CLI
+netlify deploy --prod --dir=build/web
+```
+
+### Vercel
+
+```bash
+flutter build web --release
+# Deploy using Vercel CLI
+vercel --prod build/web
+```
+
+### Firebase Hosting
+
+```bash
+flutter build web --release
+firebase init hosting
+firebase deploy
+```
+
+### GitHub Pages
+
+```bash
+flutter build web --release --base-href "/badminton_draw/"
+# Push build/web/ to gh-pages branch
+```
+
+### AWS S3 + CloudFront
+
+```bash
+flutter build web --release
+aws s3 sync build/web/ s3://your-bucket-name/
+aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
+```
+
+## 🛠️ Development
+
+### Project Setup
+
+```bash
+# Get dependencies
+flutter pub get
+
+# Run analyzer
+flutter analyze
+
+# Format code
+flutter format lib/
+
+# Clean build artifacts
+flutter clean
+```
+
+### Architecture Patterns
+
+- **State Management**: Provider pattern with ChangeNotifier
+- **Service Layer**: Business logic separated from UI
+- **Repository Pattern**: Storage abstraction layer
+- **Immutability**: Models use `copyWith` for safe updates
+
+### Code Quality Standards
+
+- ✅ No compilation errors
+- ✅ Static analysis passing
+- ✅ Proper error handling
+- ✅ User feedback for actions
+- ✅ Responsive design
+
+## �� Contributing
+
+Contributions are welcome! Please follow these steps:
+
 1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Follow existing code style and architecture
-4. Test critical business logic changes
-5. Submit pull request with clear description
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 **License**
+## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 **Troubleshooting**
+## 👤 Author
 
-### **Common Issues**
+**axoulc**
+- GitHub: [@axoulc](https://github.com/axoulc)
+- Repository: [badminton_draw](https://github.com/axoulc/badminton_draw)
 
-**Application won't load:**
-- Check browser console for errors
-- Ensure serving over HTTP/HTTPS (not file://)
-- Verify Material 3 components loaded
+## 🙏 Acknowledgments
 
-**Data not persisting:**
-- Check localStorage quota (5-10MB limit)
-- Clear browser cache and try again
-- Export data before clearing storage
+- Flutter team for the excellent framework
+- Material Design team for the design system
+- Swiss-system tournament format for pairing inspiration
+- Cirrus Labs for the Flutter Docker image
 
-**Docker container fails:**
-- Verify port 80 is available
-- Check Docker logs: `docker logs badminton-tournament`
-- Ensure sufficient disk space
+## 📞 Support
 
-**Mobile display issues:**
-- Clear browser cache
-- Check viewport meta tag
-- Test in different orientations
+For issues, questions, or feature requests:
 
-### **Reset Application**
-```bash
-# Clear all stored data
-localStorage.clear()  # In browser console
-
-# Or use Settings → Tournament Actions → New Tournament
-```
-
-## 🎯 **Roadmap**
-
-Future enhancements (following frugal principles):
-
-- **PWA Support**: Offline installation capability
-- **Tournament Templates**: Pre-configured tournament types
-- **Player Statistics**: Historical performance tracking
-- **Multi-language**: Internationalization support
-- **Print Support**: Tournament brackets and results
+- **Issues**: [GitHub Issues](https://github.com/axoulc/badminton_draw/issues)
+- **Documentation**: See [Documentation](#-documentation) section
+- **Troubleshooting**: Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ---
 
-**Built with ❤️ following frugal development principles**
+**Built with ❤️ using Flutter**
 
-*No backend required • No complex setup • Just works*
+*No backend required • Works offline • Privacy-focused*

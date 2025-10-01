@@ -93,24 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const PopupMenuItem(
-                    value: 'export',
-                    child: ListTile(
-                      leading: Icon(Icons.file_upload),
-                      title: Text('Export'),
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'backup',
-                    child: ListTile(
-                      leading: Icon(Icons.backup),
-                      title: Text('Create Backup'),
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuItem(
                     value: 'reset',
                     child: ListTile(
                       leading: Icon(Icons.refresh),
@@ -193,12 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'import_backup':
         _importBackupFile(context, provider);
         break;
-      case 'export':
-        _showExportDialog(context, provider);
-        break;
-      case 'backup':
-        await _createBackup(context, provider);
-        break;
       case 'reset':
         await _showResetConfirmation(context, provider);
         break;
@@ -206,24 +182,6 @@ class _HomeScreenState extends State<HomeScreen> {
         await _showDeleteConfirmation(context, provider);
         break;
     }
-  }
-
-  void _showExportDialog(BuildContext context, TournamentProvider provider) {
-    final json = provider.exportTournament();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Export Tournament'),
-        content: SingleChildScrollView(child: SelectableText(json)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _exportBackupFile(BuildContext context, TournamentProvider provider) {
@@ -287,26 +245,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     });
-  }
-
-  Future<void> _createBackup(
-    BuildContext context,
-    TournamentProvider provider,
-  ) async {
-    try {
-      final backupKey = await provider.createBackup();
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Backup created: $backupKey')));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error creating backup: $e')));
-      }
-    }
   }
 
   Future<void> _showResetConfirmation(
