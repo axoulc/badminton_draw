@@ -1,0 +1,288 @@
+import 'package:flutter/foundation.dart';
+import '../models/tournament.dart';
+import '../models/player.dart';
+import '../services/tournament_service.dart';
+
+/// App state provider managing the tournament
+class TournamentProvider extends ChangeNotifier {
+  final TournamentService _tournamentService;
+
+  Tournament? _tournament;
+  bool _isLoading = false;
+  String? _error;
+
+  TournamentProvider({TournamentService? tournamentService})
+    : _tournamentService = tournamentService ?? TournamentService() {
+    _loadTournament();
+  }
+
+  // Getters
+  Tournament? get tournament => _tournament;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get hasTournament => _tournament != null;
+  bool get canGenerateRound =>
+      _tournament != null && _tournament!.status == TournamentStatus.active;
+
+  /// Load tournament from storage
+  Future<void> _loadTournament() async {
+    _setLoading(true);
+    try {
+      _tournament = await _tournamentService.loadTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to load tournament: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Create a new tournament
+  Future<void> createTournament({
+    required String name,
+    required TournamentMode mode,
+  }) async {
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.createTournament(name: name, mode: mode);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to create tournament: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Add a player
+  Future<void> addPlayer(String name) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.addPlayer(_tournament!, name);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to add player: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Remove a player
+  Future<void> removePlayer(String playerId) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.removePlayer(_tournament!, playerId);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to remove player: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Update a player
+  Future<void> updatePlayer(String playerId, String newName) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.updatePlayer(
+        _tournament!,
+        playerId,
+        newName,
+      );
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to update player: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Start the tournament
+  Future<void> startTournament() async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.startTournament(_tournament!);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to start tournament: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Generate a new round
+  Future<void> generateRound() async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.generateRound(_tournament!);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to generate round: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Record a match result
+  Future<void> recordMatchResult({
+    required String roundId,
+    required String matchId,
+    required String winnerId,
+  }) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.recordMatchResult(
+        _tournament!,
+        roundId,
+        matchId,
+        winnerId,
+      );
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to record match result: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Complete the tournament
+  Future<void> completeTournament() async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.completeTournament(_tournament!);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to complete tournament: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Reset the tournament
+  Future<void> resetTournament() async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.resetTournament(_tournament!);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to reset tournament: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Delete the tournament
+  Future<void> deleteTournament() async {
+    _setLoading(true);
+    try {
+      _tournament = null;
+      await _tournamentService.saveTournament(_tournament!);
+      _clearError();
+    } catch (e) {
+      _setError('Failed to delete tournament: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Get rankings
+  List<Player> getRankings() {
+    if (_tournament == null) return [];
+    return _tournamentService.getRankings(_tournament!);
+  }
+
+  /// Get statistics
+  dynamic getStatistics() {
+    if (_tournament == null) return null;
+    return _tournamentService.getStatistics(_tournament!);
+  }
+
+  /// Export tournament
+  String exportTournament() {
+    if (_tournament == null) return '';
+    return _tournamentService.exportTournament(_tournament!);
+  }
+
+  /// Import tournament
+  Future<void> importTournament(String json) async {
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.importTournament(json);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to import tournament: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Create backup
+  Future<String> createBackup() async {
+    if (_tournament == null) throw Exception('No tournament to backup');
+    return await _tournamentService.createBackup(_tournament!);
+  }
+
+  /// Save tournament to storage
+  Future<void> _saveTournament() async {
+    if (_tournament != null) {
+      await _tournamentService.saveTournament(_tournament!);
+    }
+  }
+
+  /// Set loading state
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+
+  /// Set error message
+  void _setError(String message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  /// Clear error message
+  void _clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  /// Clear error manually
+  void clearError() {
+    _clearError();
+  }
+}

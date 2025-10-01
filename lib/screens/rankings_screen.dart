@@ -1,0 +1,167 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/tournament_provider.dart';
+
+/// Rankings screen showing player leaderboard
+class RankingsScreen extends StatelessWidget {
+  const RankingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TournamentProvider>(
+      builder: (context, provider, child) {
+        final tournament = provider.tournament;
+        if (tournament == null) {
+          return const Center(child: Text('No tournament'));
+        }
+
+        final rankings = provider.getRankings();
+
+        if (rankings.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.emoji_events_outlined,
+                  size: 64,
+                  color: Theme.of(context).disabledColor,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No rankings yet',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: rankings.length,
+          itemBuilder: (context, index) {
+            final player = rankings[index];
+            final rank = index + 1;
+
+            // Medal colors for top 3
+            Color? medalColor;
+            IconData? medalIcon;
+            if (rank == 1) {
+              medalColor = Colors.amber;
+              medalIcon = Icons.emoji_events;
+            } else if (rank == 2) {
+              medalColor = Colors.grey;
+              medalIcon = Icons.emoji_events;
+            } else if (rank == 3) {
+              medalColor = Colors.brown;
+              medalIcon = Icons.emoji_events;
+            }
+
+            return Card(
+              elevation: rank <= 3 ? 4 : 1,
+              child: ListTile(
+                leading: medalIcon != null
+                    ? Icon(medalIcon, color: medalColor, size: 32)
+                    : CircleAvatar(child: Text('$rank')),
+                title: Text(
+                  player.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _StatChip(
+                          label: 'Wins',
+                          value: '${player.wins}',
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatChip(
+                          label: 'Losses',
+                          value: '${player.losses}',
+                          color: Colors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatChip(
+                          label: 'Win Rate',
+                          value:
+                              '${(player.winRate * 100).toStringAsFixed(0)}%',
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${player.points}',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                    Text(
+                      'points',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Small stat chip widget
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: TextStyle(fontSize: 11, color: color)),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

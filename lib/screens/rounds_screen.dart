@@ -1,0 +1,246 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/tournament_provider.dart';
+import '../models/match.dart';
+
+/// Rounds screen showing all matches organized by rounds
+class RoundsScreen extends StatelessWidget {
+  const RoundsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TournamentProvider>(
+      builder: (context, provider, child) {
+        final tournament = provider.tournament;
+        if (tournament == null) {
+          return const Center(child: Text('No tournament'));
+        }
+
+        return Column(
+          children: [
+            // Generate round button
+            if (provider.canGenerateRound)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: FilledButton.icon(
+                  onPressed: () => _generateRound(context, provider),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Generate Round'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                ),
+              ),
+
+            // Rounds list
+            Expanded(
+              child: tournament.rounds.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.sports_tennis,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No rounds yet',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Generate a round to start',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: tournament.rounds.length,
+                      itemBuilder: (context, index) {
+                        final round = tournament.rounds[index];
+
+                        return Card(
+                          child: ExpansionTile(
+                            leading: CircleAvatar(
+                              child: Text('R${round.number}'),
+                            ),
+                            title: Text('Round ${round.number}'),
+                            subtitle: LinearProgressIndicator(
+                              value: round.completionRate,
+                              backgroundColor: Colors.grey.shade300,
+                            ),
+                            trailing: Text(
+                              '${round.completedCount}/${round.matches.length}',
+                            ),
+                            children: round.matches.map((match) {
+                              return _MatchTile(
+                                match: match,
+                                roundId: round.id,
+                                onResultRecorded: () {
+                                  // Refresh handled by provider
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _generateRound(
+    BuildContext context,
+    TournamentProvider provider,
+  ) async {
+    try {
+      await provider.generateRound();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Round generated successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+}
+
+/// Match tile widget for displaying and scoring matches
+class _MatchTile extends StatelessWidget {
+  final Match match;
+  final String roundId;
+  final VoidCallback onResultRecorded;
+
+  const _MatchTile({
+    required this.match,
+    required this.roundId,
+    required this.onResultRecorded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = match.isCompleted;
+
+    return ListTile(
+      title: Row(
+        children: [
+          Expanded(
+            child: _TeamSection(
+              team: match.team1,
+              isWinner: match.team1Won,
+              isCompleted: isCompleted,
+              onTap: !isCompleted
+                  ? () => _recordResult(context, 'team1')
+                  : null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text('vs', style: Theme.of(context).textTheme.bodySmall),
+          ),
+          Expanded(
+            child: _TeamSection(
+              team: match.team2,
+              isWinner: match.team2Won,
+              isCompleted: isCompleted,
+              onTap: !isCompleted
+                  ? () => _recordResult(context, 'team2')
+                  : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _recordResult(BuildContext context, String winnerId) async {
+    final provider = Provider.of<TournamentProvider>(context, listen: false);
+
+    try {
+      await provider.recordMatchResult(
+        roundId: roundId,
+        matchId: match.id,
+        winnerId: winnerId,
+      );
+
+      onResultRecorded();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Result recorded')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+}
+
+/// Team section widget
+class _TeamSection extends StatelessWidget {
+  final List team;
+  final bool isWinner;
+  final bool isCompleted;
+  final VoidCallback? onTap;
+
+  const _TeamSection({
+    required this.team,
+    required this.isWinner,
+    required this.isCompleted,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isCompleted && isWinner ? Colors.green.withOpacity(0.2) : null,
+          border: Border.all(
+            color: isCompleted && isWinner
+                ? Colors.green
+                : Colors.grey.shade300,
+            width: isCompleted && isWinner ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: team.map((player) {
+            return Text(
+              player.name,
+              style: TextStyle(
+                fontWeight: isCompleted && isWinner
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+                fontSize: 14,
+              ),
+              overflow: TextOverflow.ellipsis,
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}

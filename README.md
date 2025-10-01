@@ -1,15 +1,17 @@
 # 🎾 Badminton Tournament Manager
 
-A modern, frugal web application for managing doubles badminton tournaments with random pairing, live scoring, and real-time rankings.
+A modern, cross-platform application for managing badminton tournaments (singles & doubles) with random pairing, live scoring, and real-time rankings.
 
+![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?style=flat-square&logo=flutter)
 ![Material 3](https://img.shields.io/badge/Material%203-Design-6750A4?style=flat-square)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square)
+![Web](https://img.shields.io/badge/Platform-Web-4285F4?style=flat-square)
+![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square)
 ![No Backend](https://img.shields.io/badge/Backend-None%20Required-00C853?style=flat-square)
-![PWA Ready](https://img.shields.io/badge/PWA-Ready-FF6F00?style=flat-square)
 
 ## ✨ Features
 
 ### 🏆 **Tournament Management**
+- **Tournament Modes**: Singles (1v1) or Doubles (2v2) tournament support
 - **Player Management**: Add, edit, remove players with duplicate validation
 - **Random Pairing**: Fisher-Yates shuffle algorithm with smart constraints
 - **Live Scoring**: Simple winner selection with +2/+1 point system
@@ -17,37 +19,99 @@ A modern, frugal web application for managing doubles badminton tournaments with
 - **Tournament Lifecycle**: Setup → Active → Complete workflow
 
 ### 🎨 **Modern UI/UX**
-- **Material 3 Design**: Latest Google design system
+- **Material 3 Design**: Latest Google design system with Flutter
 - **Responsive Layout**: Works on desktop, tablet, and mobile
 - **Dark Mode Support**: Respects system preferences
-- **Toast Notifications**: Real-time feedback for all actions
+- **Native Performance**: Smooth animations and transitions
 - **Accessibility**: ARIA labels and keyboard navigation
 
 ### 💾 **Data Management**
-- **Local Storage**: No backend required, data persists in browser
-- **Auto-save**: Automatic saving every 30 seconds
+- **Local Storage**: No backend required, data persists locally
+- **Auto-save**: Automatic saving with Flutter persistence
 - **Backup/Restore**: Create and restore tournament snapshots
 - **Export/Import**: JSON data exchange for sharing tournaments
-- **CSV Export**: Export rankings for external analysis
 
-### 🚀 **Deployment**
-- **Docker Ready**: One-command deployment with nginx
-- **Static Files**: Runs on any web server
-- **No Dependencies**: Self-contained application
+### 🚀 **Cross-Platform**
+- **Web**: Progressive Web App ready
+- **Android**: Native Android application
 - **Offline Capable**: Works without internet connection
 
 ## 🏗️ **Architecture**
 
-Built following **frugal development principles**:
+Built with **Flutter** for cross-platform development:
 
 - **Functional-First**: Every feature works reliably
 - **Pragmatic**: "Good enough" solutions over perfection  
 - **Simple**: Clean, maintainable code without over-engineering
-- **Minimal**: Only essential dependencies
+- **Cross-Platform**: Single codebase for web and Android
 
 ### **Tech Stack**
-- **Frontend**: Vanilla JavaScript ES2022, Material 3 Web Components
-- **Storage**: Browser localStorage with JSON serialization
+- **Framework**: Flutter 3.9.2+ with Dart
+- **UI**: Material 3 Design System
+- **State Management**: Provider (ChangeNotifier pattern)
+- **Storage**: SharedPreferences for local persistence
+- **Platforms**: Web + Android (iOS and Desktop ready)
+
+## 🚀 **Getting Started**
+
+### Prerequisites
+- Flutter SDK 3.9.2 or higher
+- Dart SDK (included with Flutter)
+- For Android: Android Studio + Android SDK
+- For Web: Chrome browser
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/badminton_draw.git
+   cd badminton_draw
+   ```
+
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Run on Web**
+   ```bash
+   flutter run -d chrome
+   ```
+
+4. **Run on Android**
+   ```bash
+   flutter run -d android
+   ```
+
+5. **Build for production**
+   ```bash
+   # Web
+   flutter build web --release
+   
+   # Android APK
+   flutter build apk --release
+   
+   # Android App Bundle
+   flutter build appbundle --release
+   ```
+
+## 📱 **Usage**
+
+### Starting a Tournament
+1. Launch the app
+2. Choose tournament mode: Singles (1v1) or Doubles (2v2)
+3. Add players using the "Add Player" button
+4. Once players are added, tap "Generate Round" to create matches
+
+### During Tournament
+- **Score Matches**: Tap on a match to select the winner
+- **View Rankings**: Check real-time standings in the Rankings tab
+- **Generate Rounds**: Create new rounds as matches complete
+
+### Tournament Completion
+- View final rankings
+- Export tournament data (JSON format)
+- Start a new tournament or restore from backup
 - **Deployment**: Docker + nginx
 - **Testing**: Jest (for critical business logic only)
 
