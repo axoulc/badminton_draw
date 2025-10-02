@@ -80,6 +80,12 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "flutter_localizations",
+      "rootUri": "file:///home/axel-fpoc/development/flutter/packages/flutter_localizations",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
       "name": "flutter_test",
       "rootUri": "file:///home/axel-fpoc/development/flutter/packages/flutter_test",
       "packageUri": "lib/",
@@ -90,6 +96,12 @@
       "rootUri": "file:///home/axel-fpoc/development/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.8"
+    },
+    {
+      "name": "intl",
+      "rootUri": "file:///home/axel-fpoc/.pub-cache/hosted/pub.dev/intl-0.20.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
     },
     {
       "name": "json_annotation",

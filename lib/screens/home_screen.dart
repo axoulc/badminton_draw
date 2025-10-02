@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/tournament.dart';
 import 'setup_screen.dart';
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<TournamentProvider>(
       builder: (context, provider, child) {
         // Show setup screen if no tournament exists or tournament is in setup
@@ -65,49 +67,49 @@ class _HomeScreenState extends State<HomeScreen> {
               PopupMenuButton<String>(
                 onSelected: (value) => _handleMenuAction(context, value),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'settings',
                     child: ListTile(
-                      leading: Icon(Icons.settings),
-                      title: Text('Settings'),
+                      leading: const Icon(Icons.settings),
+                      title: Text(l10n.settings),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'export_backup',
                     child: ListTile(
-                      leading: Icon(Icons.download),
-                      title: Text('Export Backup'),
+                      leading: const Icon(Icons.download),
+                      title: Text(l10n.exportBackup),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'import_backup',
                     child: ListTile(
-                      leading: Icon(Icons.upload),
-                      title: Text('Import Backup'),
+                      leading: const Icon(Icons.upload),
+                      title: Text(l10n.importBackup),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'reset',
                     child: ListTile(
-                      leading: Icon(Icons.refresh),
-                      title: Text('Reset'),
+                      leading: const Icon(Icons.refresh),
+                      title: Text(l10n.reset),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: ListTile(
-                      leading: Icon(Icons.delete, color: Colors.red),
+                      leading: const Icon(Icons.delete, color: Colors.red),
                       title: Text(
-                        'Delete',
-                        style: TextStyle(color: Colors.red),
+                        l10n.delete,
+                        style: const TextStyle(color: Colors.red),
                       ),
                       dense: true,
                       contentPadding: EdgeInsets.zero,
@@ -125,21 +127,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 _selectedIndex = index;
               });
             },
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.people_outline),
-                selectedIcon: Icon(Icons.people),
-                label: 'Players',
+                icon: const Icon(Icons.people_outline),
+                selectedIcon: const Icon(Icons.people),
+                label: l10n.players,
               ),
               NavigationDestination(
-                icon: Icon(Icons.sports_tennis_outlined),
-                selectedIcon: Icon(Icons.sports_tennis),
-                label: 'Rounds',
+                icon: const Icon(Icons.sports_tennis_outlined),
+                selectedIcon: const Icon(Icons.sports_tennis),
+                label: l10n.rounds,
               ),
               NavigationDestination(
-                icon: Icon(Icons.emoji_events_outlined),
-                selectedIcon: Icon(Icons.emoji_events),
-                label: 'Rankings',
+                icon: const Icon(Icons.emoji_events_outlined),
+                selectedIcon: const Icon(Icons.emoji_events),
+                label: l10n.rankings,
               ),
             ],
           ),
@@ -185,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _exportBackupFile(BuildContext context, TournamentProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final jsonString = provider.exportBackupJson();
       final tournament = provider.tournament!;
@@ -202,20 +205,21 @@ class _HomeScreenState extends State<HomeScreen> {
       html.Url.revokeObjectUrl(url);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Backup exported: $filename')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.backupExported}: $filename')),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error exporting backup: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorExportingBackup}: $e')),
+        );
       }
     }
   }
 
   void _importBackupFile(BuildContext context, TournamentProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     final uploadInput = html.FileUploadInputElement()..accept = '.json';
     uploadInput.click();
 
@@ -231,14 +235,14 @@ class _HomeScreenState extends State<HomeScreen> {
             await provider.importBackupJson(jsonString);
 
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup imported successfully!')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
             }
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error importing backup: $e')),
+                SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
               );
             }
           }
@@ -251,23 +255,21 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     TournamentProvider provider,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset Tournament'),
-        content: const Text(
-          'This will reset all rounds and scores. Players will be kept. '
-          'This action cannot be undone.',
-        ),
+        title: Text(l10n.resetTournament),
+        content: Text(l10n.resetConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Reset'),
+            child: Text(l10n.reset),
           ),
         ],
       ),
@@ -276,9 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirmed == true) {
       await provider.resetTournament();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tournament reset successfully')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.tournamentResetSuccess)));
       }
     }
   }
@@ -287,23 +289,21 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     TournamentProvider provider,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Tournament'),
-        content: const Text(
-          'This will permanently delete the tournament and all data. '
-          'This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteTournament),
+        content: Text(l10n.deleteConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Tournament deleted')));
+        ).showSnackBar(SnackBar(content: Text(l10n.tournamentDeletedSuccess)));
       }
     }
   }

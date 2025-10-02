@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tournament.dart';
 import '../models/player.dart';
 import '../services/tournament_service.dart';
@@ -10,10 +12,13 @@ class TournamentProvider extends ChangeNotifier {
   Tournament? _tournament;
   bool _isLoading = false;
   String? _error;
+  ThemeMode _themeMode = ThemeMode.system;
+  Locale _locale = const Locale('en');
 
   TournamentProvider({TournamentService? tournamentService})
     : _tournamentService = tournamentService ?? TournamentService() {
     _loadTournament();
+    _loadPreferences();
   }
 
   // Getters
@@ -23,6 +28,58 @@ class TournamentProvider extends ChangeNotifier {
   bool get hasTournament => _tournament != null;
   bool get canGenerateRound =>
       _tournament != null && _tournament!.status == TournamentStatus.active;
+  ThemeMode get themeMode => _themeMode;
+  Locale get locale => _locale;
+
+  /// Load user preferences
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeModeString = prefs.getString('theme_mode');
+      final languageCode = prefs.getString('language_code');
+
+      if (themeModeString != null) {
+        _themeMode = ThemeMode.values.firstWhere(
+          (mode) => mode.toString() == themeModeString,
+          orElse: () => ThemeMode.system,
+        );
+      }
+
+      if (languageCode != null) {
+        _locale = Locale(languageCode);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading preferences: $e');
+    }
+  }
+
+  /// Update theme mode
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('theme_mode', mode.toString());
+    } catch (e) {
+      debugPrint('Error saving theme mode: $e');
+    }
+  }
+
+  /// Update locale
+  Future<void> setLocale(Locale locale) async {
+    _locale = locale;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('language_code', locale.languageCode);
+    } catch (e) {
+      debugPrint('Error saving locale: $e');
+    }
+  }
 
   /// Load tournament from storage
   Future<void> _loadTournament() async {

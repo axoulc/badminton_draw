@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 
 /// Settings screen for tournament configuration
@@ -38,18 +39,110 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: Consumer<TournamentProvider>(
         builder: (context, provider, child) {
           final tournament = provider.tournament;
           if (tournament == null) {
-            return const Center(child: Text('No tournament available'));
+            return Center(child: Text(l10n.noTournament));
           }
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // App Settings Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.appSettings,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Theme Mode Selector
+                      Text(
+                        l10n.themeMode,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<ThemeMode>(
+                        segments: [
+                          ButtonSegment<ThemeMode>(
+                            value: ThemeMode.light,
+                            label: Text(l10n.light),
+                            icon: const Icon(Icons.light_mode),
+                          ),
+                          ButtonSegment<ThemeMode>(
+                            value: ThemeMode.dark,
+                            label: Text(l10n.dark),
+                            icon: const Icon(Icons.dark_mode),
+                          ),
+                          ButtonSegment<ThemeMode>(
+                            value: ThemeMode.system,
+                            label: Text(l10n.system),
+                            icon: const Icon(Icons.brightness_auto),
+                          ),
+                        ],
+                        selected: <ThemeMode>{provider.themeMode},
+                        onSelectionChanged: (Set<ThemeMode> newSelection) {
+                          provider.setThemeMode(newSelection.first);
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Language Selector
+                      Text(
+                        l10n.language,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<String>(
+                        segments: [
+                          ButtonSegment<String>(
+                            value: 'en',
+                            label: Text(l10n.english),
+                            icon: const Icon(Icons.language),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'fr',
+                            label: Text(l10n.french),
+                            icon: const Icon(Icons.language),
+                          ),
+                        ],
+                        selected: <String>{provider.locale.languageCode},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          provider.setLocale(Locale(newSelection.first));
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Scoring Settings Card
               Card(
                 child: Padding(
@@ -65,14 +158,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Scoring System',
+                            l10n.scoringSettings,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Configure how many points winners and losers receive',
+                        l10n.scoringSystemDescription,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
@@ -84,11 +177,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       // Winner Points
                       TextField(
                         controller: _winnerPointsController,
-                        decoration: const InputDecoration(
-                          labelText: 'Winner Points',
-                          helperText: 'Points awarded to the winning team',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.emoji_events),
+                        decoration: InputDecoration(
+                          labelText: l10n.winnerPoints,
+                          helperText: l10n.winnerPointsHelp,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.emoji_events),
                         ),
                         keyboardType: TextInputType.number,
                         inputFormatters: [
@@ -100,12 +193,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       // Loser Points
                       TextField(
                         controller: _loserPointsController,
-                        decoration: const InputDecoration(
-                          labelText: 'Loser Points',
-                          helperText:
-                              'Points awarded to the losing team (participation)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.groups),
+                        decoration: InputDecoration(
+                          labelText: l10n.loserPoints,
+                          helperText: l10n.loserPointsHelp,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.groups),
                         ),
                         keyboardType: TextInputType.number,
                         inputFormatters: [
@@ -137,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Current: Winner ${tournament.winnerPoints} pts, Loser ${tournament.loserPoints} pts',
+                              '${l10n.current}: ${l10n.winner} ${tournament.winnerPoints} ${l10n.points}, ${l10n.loser} ${tournament.loserPoints} ${l10n.points}',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
