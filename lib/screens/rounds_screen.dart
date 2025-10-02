@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/match.dart';
 
@@ -9,11 +10,12 @@ class RoundsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<TournamentProvider>(
       builder: (context, provider, child) {
         final tournament = provider.tournament;
         if (tournament == null) {
-          return const Center(child: Text('No tournament'));
+          return Center(child: Text(l10n.noTournament));
         }
 
         return Column(
@@ -25,7 +27,7 @@ class RoundsScreen extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => _generateRound(context, provider),
                   icon: const Icon(Icons.add),
-                  label: const Text('Generate Round'),
+                  label: Text(l10n.generateRound),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
                   ),
@@ -62,19 +64,35 @@ class RoundsScreen extends StatelessWidget {
                       itemCount: tournament.rounds.length,
                       itemBuilder: (context, index) {
                         final round = tournament.rounds[index];
+                        final isCompleted = round.isCompleted;
 
                         return Card(
                           child: ExpansionTile(
                             leading: CircleAvatar(
                               child: Text('R${round.number}'),
                             ),
-                            title: Text('Round ${round.number}'),
+                            title: Text('${l10n.round} ${round.number}'),
                             subtitle: LinearProgressIndicator(
                               value: round.completionRate,
                               backgroundColor: Colors.grey.shade300,
                             ),
-                            trailing: Text(
-                              '${round.completedCount}/${round.matches.length}',
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (!isCompleted)
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh),
+                                    tooltip: l10n.regenerateRound,
+                                    onPressed: () => _showRegenerateDialog(
+                                      context,
+                                      provider,
+                                      round.id,
+                                    ),
+                                  ),
+                                Text(
+                                  '${round.completedCount}/${round.matches.length}',
+                                ),
+                              ],
                             ),
                             children: round.matches.map((match) {
                               return _MatchTile(
@@ -100,19 +118,63 @@ class RoundsScreen extends StatelessWidget {
     BuildContext context,
     TournamentProvider provider,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       await provider.generateRound();
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Round generated successfully')),
+          SnackBar(content: Text('${l10n.round} ${l10n.success}')),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+      }
+    }
+  }
+
+  Future<void> _showRegenerateDialog(
+    BuildContext context,
+    TournamentProvider provider,
+    String roundId,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.regenerateRound),
+        content: Text(l10n.regenerateRoundConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await provider.regenerateRound(roundId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.roundRegenerated)));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+        }
       }
     }
   }
@@ -132,6 +194,7 @@ class _MatchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isCompleted = match.isCompleted;
 
     return ListTile(
@@ -147,7 +210,7 @@ class _MatchTile extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text('vs', style: Theme.of(context).textTheme.bodySmall),
+            child: Text(l10n.vs, style: Theme.of(context).textTheme.bodySmall),
           ),
           Expanded(
             child: _TeamSection(
@@ -171,6 +234,7 @@ class _MatchTile extends StatelessWidget {
 
   Future<void> _recordResult(BuildContext context, String winnerId) async {
     final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.recordMatchResult(
@@ -184,26 +248,27 @@ class _MatchTile extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Result recorded')));
+        ).showSnackBar(SnackBar(content: Text(l10n.resultRecorded)));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }
 
   void _showEditResultDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Match Result'),
+        title: Text(l10n.editMatchResult),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select the winner:'),
+            Text(l10n.selectWinner),
             const SizedBox(height: 16),
             ListTile(
               leading: Icon(
@@ -246,7 +311,7 @@ class _MatchTile extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
         ],
       ),

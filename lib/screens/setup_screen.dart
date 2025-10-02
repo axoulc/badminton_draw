@@ -2,6 +2,7 @@ import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/tournament.dart';
 
@@ -28,13 +29,14 @@ class _SetupScreenState extends State<SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<TournamentProvider>(
       builder: (context, provider, child) {
         final hasTournament = provider.hasTournament;
         final tournament = provider.tournament;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Tournament Setup')),
+          appBar: AppBar(title: Text(l10n.tournamentSetup)),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -51,37 +53,37 @@ class _SetupScreenState extends State<SetupScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Create New Tournament',
+                              l10n.createNewTournament,
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _nameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Tournament Name',
-                                hintText: 'e.g., Summer Championship 2024',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.sports_tennis),
+                              decoration: InputDecoration(
+                                labelText: l10n.tournamentName,
+                                hintText: l10n.tournamentNameHint,
+                                border: const OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.sports_tennis),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter a tournament name';
+                                  return l10n.enterTournamentName;
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 16),
                             SegmentedButton<TournamentMode>(
-                              segments: const [
+                              segments: [
                                 ButtonSegment(
                                   value: TournamentMode.singles,
-                                  label: Text('Singles (1v1)'),
-                                  icon: Icon(Icons.person),
+                                  label: Text(l10n.singles),
+                                  icon: const Icon(Icons.person),
                                 ),
                                 ButtonSegment(
                                   value: TournamentMode.doubles,
-                                  label: Text('Doubles (2v2)'),
-                                  icon: Icon(Icons.people),
+                                  label: Text(l10n.doubles),
+                                  icon: const Icon(Icons.people),
                                 ),
                               ],
                               selected: {_selectedMode},
@@ -96,7 +98,7 @@ class _SetupScreenState extends State<SetupScreen> {
                             FilledButton.icon(
                               onPressed: _createTournament,
                               icon: const Icon(Icons.add),
-                              label: const Text('Create Tournament'),
+                              label: Text(l10n.createTournament),
                             ),
                             const SizedBox(height: 8),
                             const Divider(),
@@ -109,7 +111,7 @@ class _SetupScreenState extends State<SetupScreen> {
                             OutlinedButton.icon(
                               onPressed: _importBackupFile,
                               icon: const Icon(Icons.upload_file),
-                              label: const Text('Import Backup'),
+                              label: Text(l10n.importBackup),
                             ),
                           ],
                         ),
@@ -177,11 +179,11 @@ class _SetupScreenState extends State<SetupScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _playerController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Player Name',
-                                      hintText: 'Enter player name',
-                                      border: OutlineInputBorder(),
-                                      prefixIcon: Icon(Icons.person_add),
+                                    decoration: InputDecoration(
+                                      labelText: l10n.playerName,
+                                      hintText: l10n.playerNameHint,
+                                      border: const OutlineInputBorder(),
+                                      prefixIcon: const Icon(Icons.person_add),
                                     ),
                                     onFieldSubmitted: (_) => _addPlayer(),
                                   ),
@@ -190,7 +192,7 @@ class _SetupScreenState extends State<SetupScreen> {
                                 FilledButton.icon(
                                   onPressed: _addPlayer,
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Add'),
+                                  label: Text(l10n.add),
                                 ),
                               ],
                             ),
@@ -200,7 +202,7 @@ class _SetupScreenState extends State<SetupScreen> {
                             OutlinedButton.icon(
                               onPressed: () => _showImportDialog(context),
                               icon: const Icon(Icons.file_upload),
-                              label: const Text('Import Players (JSON)'),
+                              label: Text(l10n.importPlayersJson),
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size(double.infinity, 40),
                               ),
@@ -259,7 +261,7 @@ class _SetupScreenState extends State<SetupScreen> {
                     FilledButton.icon(
                       onPressed: tournament.canStart ? _startTournament : null,
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text('Start Tournament'),
+                      label: Text(l10n.startTournament),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.all(16.0),
                       ),
@@ -278,6 +280,7 @@ class _SetupScreenState extends State<SetupScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.createTournament(
@@ -286,15 +289,15 @@ class _SetupScreenState extends State<SetupScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tournament created successfully')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.tournamentCreated)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }
@@ -304,6 +307,7 @@ class _SetupScreenState extends State<SetupScreen> {
     if (name.isEmpty) return;
 
     final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.addPlayer(name);
@@ -312,19 +316,20 @@ class _SetupScreenState extends State<SetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Player "$name" added')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.playerAdded}: "$name"')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }
 
   Future<void> _removePlayer(String playerId) async {
     final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.removePlayer(playerId);
@@ -332,19 +337,20 @@ class _SetupScreenState extends State<SetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Player removed')));
+        ).showSnackBar(SnackBar(content: Text(l10n.playerRemoved)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }
 
   Future<void> _startTournament() async {
     final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.startTournament();
@@ -352,13 +358,13 @@ class _SetupScreenState extends State<SetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Tournament started!')));
+        ).showSnackBar(SnackBar(content: Text(l10n.tournamentStarted)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
       }
     }
   }

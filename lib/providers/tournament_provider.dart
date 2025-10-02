@@ -12,8 +12,8 @@ class TournamentProvider extends ChangeNotifier {
   Tournament? _tournament;
   bool _isLoading = false;
   String? _error;
-  ThemeMode _themeMode = ThemeMode.system;
-  Locale _locale = const Locale('en');
+  ThemeMode _themeMode = ThemeMode.light;
+  Locale _locale = const Locale('fr');
 
   TournamentProvider({TournamentService? tournamentService})
     : _tournamentService = tournamentService ?? TournamentService() {
@@ -232,6 +232,44 @@ class TournamentProvider extends ChangeNotifier {
       _clearError();
     } catch (e) {
       _setError('Failed to generate round: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Regenerate an existing non-finished round with new random pairings
+  Future<void> regenerateRound(String roundId) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      // Find the round
+      final roundIndex = _tournament!.rounds.indexWhere((r) => r.id == roundId);
+      if (roundIndex == -1) {
+        throw Exception('Round not found');
+      }
+
+      final round = _tournament!.rounds[roundIndex];
+
+      // Check if round is already finished
+      if (round.isCompleted) {
+        throw Exception('Cannot regenerate a finished round');
+      }
+
+      // Remove the old round
+      final updatedRounds = List.of(_tournament!.rounds);
+      updatedRounds.removeAt(roundIndex);
+
+      _tournament = _tournament!.copyWith(rounds: updatedRounds);
+
+      // Generate a new round with the same round number
+      _tournament = _tournamentService.generateRound(_tournament!);
+
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to regenerate round: $e');
       rethrow;
     } finally {
       _setLoading(false);

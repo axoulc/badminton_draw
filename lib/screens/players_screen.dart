@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 
 /// Players screen showing all tournament participants
@@ -8,11 +9,12 @@ class PlayersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<TournamentProvider>(
       builder: (context, provider, child) {
         final tournament = provider.tournament;
         if (tournament == null) {
-          return const Center(child: Text('No tournament'));
+          return Center(child: Text(l10n.noTournament));
         }
 
         final players = tournament.players;

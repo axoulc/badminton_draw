@@ -56,6 +56,14 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['start_tournament']!;
   String get noTournament =>
       _localizedValues[locale.languageCode]!['no_tournament']!;
+  String get tournamentNameHint =>
+      _localizedValues[locale.languageCode]!['tournament_name_hint']!;
+  String get enterTournamentName =>
+      _localizedValues[locale.languageCode]!['enter_tournament_name']!;
+  String get tournamentCreated =>
+      _localizedValues[locale.languageCode]!['tournament_created']!;
+  String get tournamentStarted =>
+      _localizedValues[locale.languageCode]!['tournament_started']!;
 
   // Players
   String get addPlayer => _localizedValues[locale.languageCode]!['add_player']!;
@@ -68,6 +76,13 @@ class AppLocalizations {
   String get noPlayers => _localizedValues[locale.languageCode]!['no_players']!;
   String get minimumPlayers =>
       _localizedValues[locale.languageCode]!['minimum_players']!;
+  String get playerNameHint =>
+      _localizedValues[locale.languageCode]!['player_name_hint']!;
+  String get playerAdded =>
+      _localizedValues[locale.languageCode]!['player_added']!;
+  String get playerRemoved =>
+      _localizedValues[locale.languageCode]!['player_removed']!;
+  String get add => _localizedValues[locale.languageCode]!['add']!;
 
   // Rounds
   String get generateRound =>
@@ -82,6 +97,13 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['select_winner']!;
   String get resultRecorded =>
       _localizedValues[locale.languageCode]!['result_recorded']!;
+  String get regenerateRound =>
+      _localizedValues[locale.languageCode]!['regenerate_round']!;
+  String get regenerateRoundConfirmation =>
+      _localizedValues[locale.languageCode]!['regenerate_round_confirmation']!;
+  String get roundRegenerated =>
+      _localizedValues[locale.languageCode]!['round_regenerated']!;
+  String get vs => _localizedValues[locale.languageCode]!['vs']!;
 
   // Rankings
   String get rank => _localizedValues[locale.languageCode]!['rank']!;
@@ -184,6 +206,10 @@ class AppLocalizations {
       'create_tournament': 'Create Tournament',
       'start_tournament': 'Start Tournament',
       'no_tournament': 'No tournament',
+      'tournament_name_hint': 'e.g., Summer Championship 2024',
+      'enter_tournament_name': 'Please enter a tournament name',
+      'tournament_created': 'Tournament created successfully',
+      'tournament_started': 'Tournament started!',
 
       // Players
       'add_player': 'Add Player',
@@ -192,6 +218,10 @@ class AppLocalizations {
       'import_players_json': 'Import Players (JSON)',
       'no_players': 'No players yet',
       'minimum_players': 'Minimum players required',
+      'player_name_hint': 'Enter player name',
+      'player_added': 'Player added',
+      'player_removed': 'Player removed',
+      'add': 'Add',
 
       // Rounds
       'generate_round': 'Generate Round',
@@ -201,6 +231,11 @@ class AppLocalizations {
       'edit_match_result': 'Edit Match Result',
       'select_winner': 'Select the winner:',
       'result_recorded': 'Result recorded',
+      'regenerate_round': 'Regenerate Round',
+      'regenerate_round_confirmation':
+          'This will delete all current matches in this round and generate new random pairings. This action cannot be undone.',
+      'round_regenerated': 'Round regenerated successfully',
+      'vs': 'vs',
 
       // Rankings
       'rank': 'Rank',
@@ -283,6 +318,10 @@ class AppLocalizations {
       'create_tournament': 'Créer le Tournoi',
       'start_tournament': 'Démarrer le Tournoi',
       'no_tournament': 'Aucun tournoi',
+      'tournament_name_hint': 'ex : Championnat d\'été 2024',
+      'enter_tournament_name': 'Veuillez entrer un nom de tournoi',
+      'tournament_created': 'Tournoi créé avec succès',
+      'tournament_started': 'Tournoi démarré !',
 
       // Players
       'add_player': 'Ajouter un Joueur',
@@ -291,6 +330,10 @@ class AppLocalizations {
       'import_players_json': 'Importer des Joueurs (JSON)',
       'no_players': 'Aucun joueur pour le moment',
       'minimum_players': 'Nombre minimum de joueurs requis',
+      'player_name_hint': 'Entrez le nom du joueur',
+      'player_added': 'Joueur ajouté',
+      'player_removed': 'Joueur supprimé',
+      'add': 'Ajouter',
 
       // Rounds
       'generate_round': 'Générer une Manche',
@@ -300,6 +343,11 @@ class AppLocalizations {
       'edit_match_result': 'Modifier le Résultat du Match',
       'select_winner': 'Sélectionnez le gagnant :',
       'result_recorded': 'Résultat enregistré',
+      'regenerate_round': 'Régénérer la Manche',
+      'regenerate_round_confirmation':
+          'Ceci supprimera tous les matchs actuels de cette manche et générera de nouveaux appariements aléatoires. Cette action ne peut pas être annulée.',
+      'round_regenerated': 'Manche régénérée avec succès',
+      'vs': 'vs',
 
       // Rankings
       'rank': 'Rang',
