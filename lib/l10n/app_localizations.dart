@@ -104,6 +104,15 @@ class AppLocalizations {
   String get roundRegenerated =>
       _localizedValues[locale.languageCode]!['round_regenerated']!;
   String get vs => _localizedValues[locale.languageCode]!['vs']!;
+  String get rearrangePlayers =>
+      _localizedValues[locale.languageCode]!['rearrange_players']!;
+  String get rearrangePlayersDescription =>
+      _localizedValues[locale.languageCode]!['rearrange_players_description']!;
+  String get swapPlayers =>
+      _localizedValues[locale.languageCode]!['swap_players']!;
+  String get team => _localizedValues[locale.languageCode]!['team']!;
+  String get playersRearranged =>
+      _localizedValues[locale.languageCode]!['players_rearranged']!;
 
   // Rankings
   String get rank => _localizedValues[locale.languageCode]!['rank']!;
@@ -236,6 +245,12 @@ class AppLocalizations {
           'This will delete all current matches in this round and generate new random pairings. This action cannot be undone.',
       'round_regenerated': 'Round regenerated successfully',
       'vs': 'vs',
+      'rearrange_players': 'Rearrange Players',
+      'rearrange_players_description':
+          'Tap on two players from different teams to swap them',
+      'swap_players': 'Swap Players',
+      'team': 'Team',
+      'players_rearranged': 'Players rearranged successfully',
 
       // Rankings
       'rank': 'Rank',
@@ -348,6 +363,12 @@ class AppLocalizations {
           'Ceci supprimera tous les matchs actuels de cette manche et générera de nouveaux appariements aléatoires. Cette action ne peut pas être annulée.',
       'round_regenerated': 'Manche régénérée avec succès',
       'vs': 'vs',
+      'rearrange_players': 'Réorganiser les Joueurs',
+      'rearrange_players_description':
+          'Appuyez sur deux joueurs d\'équipes différentes pour les échanger',
+      'swap_players': 'Échanger les Joueurs',
+      'team': 'Équipe',
+      'players_rearranged': 'Joueurs réorganisés avec succès',
 
       // Rankings
       'rank': 'Rang',

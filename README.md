@@ -173,7 +173,7 @@ flutter run -d chrome --web-port 8080
 
 ```bash
 # Build optimized web application
-flutter build web --release --web-renderer html
+flutter build web --release
 
 # Output directory: build/web/
 # Files are ready to deploy to any static hosting
@@ -183,10 +183,7 @@ flutter build web --release --web-renderer html
 
 ```bash
 # HTML renderer (better compatibility, smaller size)
-flutter build web --release --web-renderer html
-
-# CanvasKit renderer (better performance, larger size)
-flutter build web --release --web-renderer canvaskit
+flutter build web --release
 ```
 
 ### Code Quality
@@ -289,7 +286,7 @@ az container create --resource-group myResourceGroup --name badminton --image my
    - **Manually**: Click "Add Player" and enter names
    - **Bulk Import**: Click "Import Players (JSON)" and paste:
      ```json
-     ["Alice", "Bob", "Charlie", "David"]
+     ["Élise", "Mathieu", "Camille", "Julien", "Sophie", "Clément", "Aurélie", "Bastien", "Manon", "Thibault", "Amélie", "Guillaume", "Océane", "Nicolas", "Chloé", "Romain", "Anaïs", "Hugo", "Charlotte", "Adrien"]
      ```
 4. Click **"Start Tournament"** when you have minimum players:
    - Singles: 4 players minimum

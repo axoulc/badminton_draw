@@ -415,6 +415,97 @@ class TournamentService {
     );
   }
 
+  /// Swap two players between teams in a match
+  /// This allows manual rebalancing of teams before the match is played
+  Tournament swapMatchPlayers({
+    required Tournament tournament,
+    required String roundId,
+    required String matchId,
+    required String player1Id,
+    required String player2Id,
+  }) {
+    // Find the round
+    final roundIndex = tournament.rounds.indexWhere((r) => r.id == roundId);
+    if (roundIndex == -1) {
+      throw TournamentException('Round not found');
+    }
+
+    final round = tournament.rounds[roundIndex];
+
+    // Find the match
+    final matchIndex = round.matches.indexWhere((m) => m.id == matchId);
+    if (matchIndex == -1) {
+      throw TournamentException('Match not found');
+    }
+
+    final match = round.matches[matchIndex];
+
+    // Check if match is already completed
+    if (match.isCompleted) {
+      throw TournamentException(
+        'Cannot rearrange players in a completed match',
+      );
+    }
+
+    // Find which teams the players are on
+    final player1InTeam1 = match.team1.any((p) => p.id == player1Id);
+    final player1InTeam2 = match.team2.any((p) => p.id == player1Id);
+    final player2InTeam1 = match.team1.any((p) => p.id == player2Id);
+    final player2InTeam2 = match.team2.any((p) => p.id == player2Id);
+
+    // Validate players exist in the match
+    if (!player1InTeam1 && !player1InTeam2) {
+      throw TournamentException('Player 1 not found in this match');
+    }
+    if (!player2InTeam1 && !player2InTeam2) {
+      throw TournamentException('Player 2 not found in this match');
+    }
+
+    // Players must be on different teams
+    if ((player1InTeam1 && player2InTeam1) ||
+        (player1InTeam2 && player2InTeam2)) {
+      throw TournamentException('Players must be on different teams to swap');
+    }
+
+    // Get the actual player objects
+    final player1 = tournament.players.firstWhere((p) => p.id == player1Id);
+    final player2 = tournament.players.firstWhere((p) => p.id == player2Id);
+
+    // Create new teams with swapped players
+    List<Player> newTeam1 = List.from(match.team1);
+    List<Player> newTeam2 = List.from(match.team2);
+
+    if (player1InTeam1) {
+      // Player 1 is in team1, player 2 is in team2
+      final index1 = newTeam1.indexWhere((p) => p.id == player1Id);
+      final index2 = newTeam2.indexWhere((p) => p.id == player2Id);
+      newTeam1[index1] = player2;
+      newTeam2[index2] = player1;
+    } else {
+      // Player 1 is in team2, player 2 is in team1
+      final index1 = newTeam2.indexWhere((p) => p.id == player1Id);
+      final index2 = newTeam1.indexWhere((p) => p.id == player2Id);
+      newTeam2[index1] = player2;
+      newTeam1[index2] = player1;
+    }
+
+    // Create updated match
+    final updatedMatch = match.copyWith(team1: newTeam1, team2: newTeam2);
+
+    // Update matches list
+    final updatedMatches = List<Match>.from(round.matches);
+    updatedMatches[matchIndex] = updatedMatch;
+
+    // Update round
+    final updatedRound = round.copyWith(matches: updatedMatches);
+
+    // Update rounds list
+    final updatedRounds = List<Round>.from(tournament.rounds);
+    updatedRounds[roundIndex] = updatedRound;
+
+    return tournament.copyWith(rounds: updatedRounds);
+  }
+
   /// Save tournament to storage
   Future<void> saveTournament(Tournament tournament) async {
     await _storageService.saveTournament(tournament);

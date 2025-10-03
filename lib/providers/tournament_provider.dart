@@ -302,6 +302,34 @@ class TournamentProvider extends ChangeNotifier {
     }
   }
 
+  /// Swap two players between teams in a match
+  Future<void> swapMatchPlayers({
+    required String roundId,
+    required String matchId,
+    required String player1Id,
+    required String player2Id,
+  }) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.swapMatchPlayers(
+        tournament: _tournament!,
+        roundId: roundId,
+        matchId: matchId,
+        player1Id: player1Id,
+        player2Id: player2Id,
+      );
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to swap players: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Complete the tournament
   Future<void> completeTournament() async {
     if (_tournament == null) return;

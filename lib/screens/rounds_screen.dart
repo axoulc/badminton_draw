@@ -222,13 +222,23 @@ class _MatchTile extends StatelessWidget {
           ),
         ],
       ),
-      trailing: isCompleted
-          ? IconButton(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isCompleted)
+            IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: l10n.rearrangePlayers,
+              onPressed: () => _showRearrangeDialog(context),
+            ),
+          if (isCompleted)
+            IconButton(
               icon: const Icon(Icons.edit),
-              tooltip: 'Edit result',
+              tooltip: l10n.editResult,
               onPressed: () => _showEditResultDialog(context),
-            )
-          : null,
+            ),
+        ],
+      ),
     );
   }
 
@@ -316,6 +326,147 @@ class _MatchTile extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showRearrangeDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    String? selectedPlayer1;
+    String? selectedPlayer2;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(l10n.rearrangePlayers),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.rearrangePlayersDescription,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 16),
+                // Team 1
+                Text(
+                  '${l10n.team} 1',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                ...match.team1.map((player) {
+                  final isSelected =
+                      selectedPlayer1 == player.id ||
+                      selectedPlayer2 == player.id;
+                  return ListTile(
+                    selected: isSelected,
+                    leading: Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                      color: isSelected ? Colors.blue : null,
+                    ),
+                    title: Text(player.name),
+                    onTap: () {
+                      setState(() {
+                        if (selectedPlayer1 == null) {
+                          selectedPlayer1 = player.id;
+                        } else if (selectedPlayer1 == player.id) {
+                          selectedPlayer1 = null;
+                        } else if (selectedPlayer2 == null) {
+                          selectedPlayer2 = player.id;
+                        } else {
+                          selectedPlayer2 = player.id;
+                        }
+                      });
+                    },
+                  );
+                }),
+                const Divider(),
+                // Team 2
+                Text(
+                  '${l10n.team} 2',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                ...match.team2.map((player) {
+                  final isSelected =
+                      selectedPlayer1 == player.id ||
+                      selectedPlayer2 == player.id;
+                  return ListTile(
+                    selected: isSelected,
+                    leading: Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                      color: isSelected ? Colors.blue : null,
+                    ),
+                    title: Text(player.name),
+                    onTap: () {
+                      setState(() {
+                        if (selectedPlayer1 == null) {
+                          selectedPlayer1 = player.id;
+                        } else if (selectedPlayer1 == player.id) {
+                          selectedPlayer1 = null;
+                        } else if (selectedPlayer2 == null) {
+                          selectedPlayer2 = player.id;
+                        } else {
+                          selectedPlayer2 = player.id;
+                        }
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: selectedPlayer1 != null && selectedPlayer2 != null
+                    ? () async {
+                        Navigator.pop(context);
+                        await _swapPlayers(
+                          dialogContext,
+                          selectedPlayer1!,
+                          selectedPlayer2!,
+                        );
+                      }
+                    : null,
+                child: Text(l10n.swapPlayers),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _swapPlayers(
+    BuildContext context,
+    String player1Id,
+    String player2Id,
+  ) async {
+    final provider = Provider.of<TournamentProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      await provider.swapMatchPlayers(
+        roundId: roundId,
+        matchId: match.id,
+        player1Id: player1Id,
+        player2Id: player2Id,
+      );
+
+      onResultRecorded(); // Refresh the UI
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.playersRearranged)));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+      }
+    }
   }
 }
 
