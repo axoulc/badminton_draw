@@ -12,7 +12,9 @@ A modern, web-based tournament management system for badminton competitions. Bui
 - [Technical Specifications](#-technical-specifications)
 - [Getting Started](#-getting-started)
 - [Compilation](#-compilation)
-- [Docker Deployment](#-docker-deployment)
+- [Deployment](#-deployment)
+  - [Docker Compose (Self-Hosted)](#-docker-compose-deployment)
+  - [GitHub Pages (Free Hosting)](#-github-pages-deployment)
 - [Documentation](#-documentation)
 - [Usage Guide](#-usage-guide)
 
@@ -199,73 +201,291 @@ flutter format lib/
 flutter test
 ```
 
-## 🐳 Docker Deployment
+## � Deployment
 
-The project includes a production-ready Dockerfile using the official Cirrus Labs Flutter image.
+This project supports two primary deployment methods: **Docker Compose** for self-hosted servers and **GitHub Pages** for free cloud hosting with automated CI/CD.
+
+---
+
+## 🐳 Docker Compose Deployment
+
+Deploy the tournament manager on your own server using Docker Compose for full control and customization.
+
+### Prerequisites
+
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- Port 8080 available (or modify in `docker-compose.yml`)
 
 ### Quick Start
 
-**Build Docker image:**
-```bash
-docker build -t badminton-tournament .
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/axoulc/badminton_draw.git
+   cd badminton_draw
+   ```
 
-**Run container:**
-```bash
-docker run -d -p 8080:80 --name badminton badminton-tournament
-```
+2. **Start the application**
+   ```bash
+   docker-compose up -d
+   ```
 
-**Access application:**
-```
-http://localhost:8080
-```
+3. **Access the application**
+   ```
+   http://localhost:8080
+   ```
 
-### Docker Configuration
+### Docker Compose Configuration
 
-- **Build Image**: `ghcr.io/cirruslabs/flutter:3.35.5`
-- **Runtime Image**: `nginx:alpine`
-- **Exposed Port**: 80
-- **Final Image Size**: ~50MB
+The `docker-compose.yml` file includes:
 
-### Docker Compose (Optional)
-
-Create `docker-compose.yml`:
 ```yaml
 version: '3.8'
+
 services:
-  badminton:
-    build: .
+  badminton-tournament:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: badminton-tournament
     ports:
       - "8080:80"
     restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
 ```
 
-Run with:
+### Management Commands
+
 ```bash
+# Start the application
 docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+
+# Check status
+docker-compose ps
 ```
 
-### Cloud Deployment with Docker
+### Custom Configuration
 
-**Google Cloud Run:**
+**Change the port:**
+Edit `docker-compose.yml`:
+```yaml
+ports:
+  - "3000:80"  # Access on port 3000
+```
+
+**Set timezone:**
+```yaml
+environment:
+  - TZ=America/New_York
+```
+
+**Add reverse proxy (Nginx/Traefik):**
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.http.routers.badminton.rule=Host(`badminton.yourdomain.com`)"
+  - "traefik.http.services.badminton.loadbalancer.server.port=80"
+```
+
+### Production Deployment
+
+For production servers, consider:
+
+1. **Use HTTPS with reverse proxy:**
+   ```bash
+   # Example with Nginx
+   sudo apt install nginx certbot python3-certbot-nginx
+   sudo certbot --nginx -d badminton.yourdomain.com
+   ```
+
+2. **Configure Nginx as reverse proxy:**
+   ```nginx
+   server {
+       listen 80;
+       server_name badminton.yourdomain.com;
+       
+       location / {
+           proxy_pass http://localhost:8080;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   ```
+
+3. **Enable automatic restarts:**
+   ```yaml
+   restart: unless-stopped  # Already configured
+   ```
+
+4. **Set up logging:**
+   ```yaml
+   logging:
+     driver: "json-file"
+     options:
+       max-size: "10m"
+       max-file: "3"
+   ```
+
+### Troubleshooting Docker Deployment
+
 ```bash
-gcloud builds submit --tag gcr.io/PROJECT-ID/badminton
-gcloud run deploy badminton --image gcr.io/PROJECT-ID/badminton --platform managed
+# Check container logs
+docker-compose logs badminton-tournament
+
+# Access container shell
+docker-compose exec badminton-tournament sh
+
+# Check port conflicts
+sudo netstat -tulpn | grep 8080
+
+# Remove all containers and volumes
+docker-compose down -v
 ```
 
-**AWS ECS/Fargate:**
+---
+
+## 📄 GitHub Pages Deployment
+
+Deploy for free with automated CI/CD using GitHub Actions. Every push to the main branch automatically builds and deploys your application.
+
+### Prerequisites
+
+- GitHub account
+- Repository forked or cloned from `axoulc/badminton_draw`
+
+### One-Time Setup
+
+1. **Enable GitHub Pages**
+   - Go to your repository on GitHub
+   - Navigate to **Settings** → **Pages**
+   - Under "Build and deployment":
+     - **Source**: Select "GitHub Actions"
+
+2. **Configure Repository Secrets (Optional)**
+   - For advanced configurations, go to **Settings** → **Secrets and variables** → **Actions**
+   - No secrets required for basic deployment
+
+### Automatic Deployment
+
+The repository includes a complete CI/CD workflow (`.github/workflows/deploy.yml`) that automatically:
+
+1. ✅ **Builds** the Flutter web application
+2. ✅ **Runs** static analysis (`flutter analyze`)
+3. ✅ **Tests** the application (`flutter test`)
+4. ✅ **Deploys** to GitHub Pages
+
+**Trigger deployment:**
 ```bash
-aws ecr create-repository --repository-name badminton
-docker tag badminton-tournament:latest AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/badminton:latest
-docker push AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/badminton:latest
+# Simply push to main branch
+git add .
+git commit -m "Update application"
+git push origin main
 ```
 
-**Azure Container Instances:**
-```bash
-az acr create --resource-group myResourceGroup --name myRegistry --sku Basic
-az acr build --registry myRegistry --image badminton:latest .
-az container create --resource-group myResourceGroup --name badminton --image myRegistry.azurecr.io/badminton:latest --dns-name-label badminton --ports 80
+**Deployment URL:**
 ```
+https://<your-username>.github.io/<repository-name>/
+```
+
+Example: `https://axoulc.github.io/badminton_draw/`
+
+### CI/CD Workflow Details
+
+The workflow (`.github/workflows/deploy.yml`) includes:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - Checkout code
+      - Setup Flutter 3.9.2
+      - Get dependencies
+      - Analyze code
+      - Run tests
+      - Build web application
+      - Upload artifact
+
+  deploy:
+    needs: build
+    environment: github-pages
+    steps:
+      - Deploy to GitHub Pages
+```
+
+### Manual Deployment Trigger
+
+You can also trigger deployment manually:
+
+1. Go to **Actions** tab in your repository
+2. Select "Deploy to GitHub Pages" workflow
+3. Click "Run workflow"
+4. Select branch and click "Run workflow"
+
+### Custom Domain (Optional)
+
+1. **Add CNAME file:**
+   ```bash
+   echo "badminton.yourdomain.com" > web/CNAME
+   git add web/CNAME
+   git commit -m "Add custom domain"
+   git push
+   ```
+
+2. **Configure DNS:**
+   - Add CNAME record pointing to `<username>.github.io`
+
+3. **Enable in GitHub:**
+   - Go to **Settings** → **Pages**
+   - Enter your custom domain
+   - Enable "Enforce HTTPS"
+
+### Monitoring Deployments
+
+- **View deployment status:** Check the **Actions** tab
+- **Deployment history:** **Settings** → **Pages** → **Visit site**
+- **Build logs:** Click on any workflow run in Actions tab
+
+### Troubleshooting GitHub Pages
+
+**Deployment failed:**
+```bash
+# Check workflow logs in Actions tab
+# Common issues:
+# - Pages not enabled in repository settings
+# - Incorrect base-href in flutter build command
+```
+
+**404 errors after deployment:**
+```bash
+# Verify base-href matches repository name
+flutter build web --release --base-href "/<repo-name>/"
+```
+
+**Changes not reflecting:**
+```bash
+# Clear browser cache or use incognito mode
+# GitHub Pages CDN may take 1-2 minutes to update
+```
+
+---
 
 ## 📚 Documentation
 
@@ -322,49 +542,6 @@ Default scoring:
 - **Loser**: 1 point
 
 Configurable in Settings menu.
-
-## 🌐 Static Hosting Deployment
-
-The built application can be deployed to any static hosting service:
-
-### Netlify
-
-```bash
-flutter build web --release
-# Deploy build/web/ directory via Netlify dashboard or CLI
-netlify deploy --prod --dir=build/web
-```
-
-### Vercel
-
-```bash
-flutter build web --release
-# Deploy using Vercel CLI
-vercel --prod build/web
-```
-
-### Firebase Hosting
-
-```bash
-flutter build web --release
-firebase init hosting
-firebase deploy
-```
-
-### GitHub Pages
-
-```bash
-flutter build web --release --base-href "/badminton_draw/"
-# Push build/web/ to gh-pages branch
-```
-
-### AWS S3 + CloudFront
-
-```bash
-flutter build web --release
-aws s3 sync build/web/ s3://your-bucket-name/
-aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
-```
 
 ## 🛠️ Development
 
@@ -425,6 +602,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Material Design team for the design system
 - Swiss-system tournament format for pairing inspiration
 - Cirrus Labs for the Flutter Docker image
+- GitHub Actions for seamless CI/CD automation
 
 ## 📞 Support
 

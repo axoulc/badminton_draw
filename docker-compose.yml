@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  badminton-tournament:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: badminton-tournament
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    labels:
+      - "description=Badminton Tournament Manager"
+      - "maintainer=axoulc"
+    networks:
+      - badminton-network
+
+networks:
+  badminton-network:
+    driver: bridge
