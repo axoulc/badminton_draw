@@ -1,6 +1,6 @@
 # 🏸 Badminton Tournament Manager
 
-A modern, web-based tournament management system for badminton competitions. Built with Flutter for seamless cross-platform support.
+A modern, cross-platform tournament management system for badminton competitions. Built with Flutter for web, Android, and more.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.9.2+-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.9.2+-0175C2?logo=dart)](https://dart.dev)
@@ -13,6 +13,7 @@ A modern, web-based tournament management system for badminton competitions. Bui
 - [Getting Started](#-getting-started)
 - [Compilation](#-compilation)
 - [Deployment](#-deployment)
+  - [Android (Mobile)](#-android-deployment)
   - [Docker Compose (Self-Hosted)](#-docker-compose-deployment)
   - [GitHub Pages (Free Hosting)](#-github-pages-deployment)
 - [Documentation](#-documentation)
@@ -201,9 +202,168 @@ flutter format lib/
 flutter test
 ```
 
-## � Deployment
+## 🚀 Deployment
 
-This project supports two primary deployment methods: **Docker Compose** for self-hosted servers and **GitHub Pages** for free cloud hosting with automated CI/CD.
+This project supports three primary deployment methods: **Android APK/Bundle** for mobile devices, **Docker Compose** for self-hosted servers, and **GitHub Pages** for free cloud hosting with automated CI/CD.
+
+---
+
+## 📱 Android Deployment
+
+Deploy the tournament manager as a native Android application.
+
+### Prerequisites
+
+- Android SDK installed (via Android Studio)
+- Android device or emulator
+- USB debugging enabled (for physical devices)
+
+### Development Build
+
+1. **Connect your Android device or start emulator**
+   ```bash
+   # Check connected devices
+   flutter devices
+   ```
+
+2. **Run on device**
+   ```bash
+   cd /home/axel-fpoc/badminton_draw
+   flutter run
+   ```
+
+### Production APK Build
+
+Build an APK for distribution:
+
+```bash
+# Build release APK
+flutter build apk --release
+
+# Output location: build/app/outputs/flutter-apk/app-release.apk
+```
+
+### Split APK by ABI (Recommended)
+
+Build separate APKs for different CPU architectures (smaller file sizes):
+
+```bash
+# Build split APKs
+flutter build apk --split-per-abi --release
+
+# Generates:
+# - app-armeabi-v7a-release.apk (32-bit ARM)
+# - app-arm64-v8a-release.apk (64-bit ARM)
+# - app-x86_64-release.apk (64-bit Intel)
+```
+
+### Android App Bundle (Google Play)
+
+For publishing to Google Play Store:
+
+```bash
+# Build app bundle
+flutter build appbundle --release
+
+# Output: build/app/outputs/bundle/release/app-release.aab
+```
+
+### App Configuration
+
+The app includes:
+
+- ✅ **App Name**: "Badminton Tournament"
+- ✅ **Icon**: Custom badminton icon (🏸) with blue background
+- ✅ **Permissions**: Internet access, Network state
+- ✅ **Orientation**: Supports portrait and landscape
+- ✅ **Min SDK**: Android 21 (Lollipop 5.0)
+
+### Permissions Included
+
+The app requests minimal permissions:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+```
+
+### Installing APK
+
+**Via USB (ADB):**
+```bash
+adb install build/app/outputs/flutter-apk/app-release.apk
+```
+
+**Direct Install:**
+- Transfer APK to device
+- Enable "Install from Unknown Sources"
+- Tap APK file to install
+
+### Signing APK for Distribution
+
+For production release, you need to sign the APK:
+
+1. **Create a keystore:**
+   ```bash
+   keytool -genkey -v -keystore ~/badminton-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias badminton
+   ```
+
+2. **Create `android/key.properties`:**
+   ```properties
+   storePassword=<your-store-password>
+   keyPassword=<your-key-password>
+   keyAlias=badminton
+   storeFile=<path-to-keystore>/badminton-key.jks
+   ```
+
+3. **Update `android/app/build.gradle.kts`:**
+   Add before `android` block:
+   ```kotlin
+   val keystoreProperties = Properties()
+   val keystorePropertiesFile = rootProject.file("key.properties")
+   if (keystorePropertiesFile.exists()) {
+       keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+   }
+   ```
+
+   In `android { ... }` block:
+   ```kotlin
+   signingConfigs {
+       create("release") {
+           keyAlias = keystoreProperties["keyAlias"] as String
+           keyPassword = keystoreProperties["keyPassword"] as String
+           storeFile = file(keystoreProperties["storeFile"] as String)
+           storePassword = keystoreProperties["storePassword"] as String
+       }
+   }
+   buildTypes {
+       release {
+           signingConfig = signingConfigs.getByName("release")
+       }
+   }
+   ```
+
+4. **Build signed APK:**
+   ```bash
+   flutter build apk --release
+   ```
+
+### Troubleshooting Android
+
+```bash
+# Clear build cache
+flutter clean
+flutter pub get
+
+# Check for issues
+flutter doctor
+
+# View device logs
+flutter logs
+
+# Build with verbose output
+flutter build apk --release --verbose
+```
 
 ---
 

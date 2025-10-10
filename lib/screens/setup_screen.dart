@@ -1,10 +1,10 @@
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/tournament.dart';
+import '../services/file_service.dart';
 
 /// Setup screen for creating and configuring tournaments
 class SetupScreen extends StatefulWidget {
@@ -461,36 +461,28 @@ class _SetupScreenState extends State<SetupScreen> {
     }
   }
 
-  void _importBackupFile() {
+  void _importBackupFile() async {
     final provider = Provider.of<TournamentProvider>(context, listen: false);
-    final uploadInput = html.FileUploadInputElement()..accept = '.json';
-    uploadInput.click();
+    final l10n = AppLocalizations.of(context)!;
 
-    uploadInput.onChange.listen((event) {
-      final file = uploadInput.files?.first;
-      if (file != null) {
-        final reader = html.FileReader();
-        reader.readAsText(file);
+    try {
+      final jsonString = await FileService.pickJsonFile();
 
-        reader.onLoadEnd.listen((event) async {
-          try {
-            final jsonString = reader.result as String;
-            await provider.importBackupJson(jsonString);
+      if (jsonString != null) {
+        await provider.importBackupJson(jsonString);
 
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup imported successfully!')),
-              );
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error importing backup: $e')),
-              );
-            }
-          }
-        });
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
+        }
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
+        );
+      }
+    }
   }
 }

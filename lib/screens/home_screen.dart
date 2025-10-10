@@ -1,10 +1,9 @@
-import 'dart:convert';
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/tournament.dart';
+import '../services/file_service.dart';
 import 'setup_screen.dart';
 import 'players_screen.dart';
 import 'rounds_screen.dart';
@@ -194,21 +193,16 @@ class _HomeScreenState extends State<HomeScreen> {
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
       final filename = '${tournament.name}_backup_$timestamp.json';
 
-      // Create a blob and download it
-      final bytes = utf8.encode(jsonString);
-      final blob = html.Blob([bytes]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      // ignore: unused_local_variable
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', filename)
-        ..click();
-      html.Url.revokeObjectUrl(url);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.backupExported}: $filename')),
-        );
-      }
+      // Use platform-agnostic file download
+      FileService.downloadFile(content: jsonString, filename: filename).then((
+        _,
+      ) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${l10n.backupExported}: $filename')),
+          );
+        }
+      });
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -218,37 +212,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _importBackupFile(BuildContext context, TournamentProvider provider) {
+  void _importBackupFile(
+    BuildContext context,
+    TournamentProvider provider,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final uploadInput = html.FileUploadInputElement()..accept = '.json';
-    uploadInput.click();
 
-    uploadInput.onChange.listen((event) {
-      final file = uploadInput.files?.first;
-      if (file != null) {
-        final reader = html.FileReader();
-        reader.readAsText(file);
+    try {
+      final jsonString = await FileService.pickJsonFile();
 
-        reader.onLoadEnd.listen((event) async {
-          try {
-            final jsonString = reader.result as String;
-            await provider.importBackupJson(jsonString);
+      if (jsonString != null) {
+        await provider.importBackupJson(jsonString);
 
-            if (context.mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
-              );
-            }
-          }
-        });
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
+        }
       }
-    });
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _showResetConfirmation(

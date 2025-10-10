@@ -1,11 +1,11 @@
 {
-    "name": "badminton_tournament",
-    "short_name": "badminton_tournament",
+    "name": "Badminton Tournament Manager",
+    "short_name": "Badminton",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#255EA8",
+    "theme_color": "#255EA8",
+    "description": "A modern tournament management system for badminton competitions",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
