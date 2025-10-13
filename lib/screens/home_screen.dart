@@ -199,14 +199,20 @@ class _HomeScreenState extends State<HomeScreen> {
       ) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.backupExported}: $filename')),
+            SnackBar(
+              content: Text('${l10n.backupExported}: $filename'),
+              duration: const Duration(seconds: 2),
+            ),
           );
         }
       });
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.errorExportingBackup}: $e')),
+          SnackBar(
+            content: Text('${l10n.errorExportingBackup}: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     }
@@ -227,13 +233,21 @@ class _HomeScreenState extends State<HomeScreen> {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
+          ).showSnackBar(
+            SnackBar(
+              content: Text(l10n.importBackupSuccess),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
+          SnackBar(
+            content: Text('${l10n.errorImportingBackup}: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     }

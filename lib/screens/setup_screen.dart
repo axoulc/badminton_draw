@@ -307,22 +307,22 @@ class _SetupScreenState extends State<SetupScreen> {
     if (name.isEmpty) return;
 
     final provider = Provider.of<TournamentProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context)!;
 
     try {
       await provider.addPlayer(name);
       _playerController.clear();
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.playerAdded}: "$name"')));
-      }
+      // No snackbar - visual feedback from player appearing in list is sufficient
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     }
   }
@@ -446,6 +446,7 @@ class _SetupScreenState extends State<SetupScreen> {
             content: Text(
               'Successfully imported ${playerNames.length} players',
             ),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -455,6 +456,7 @@ class _SetupScreenState extends State<SetupScreen> {
           SnackBar(
             content: Text('Import failed: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -474,13 +476,21 @@ class _SetupScreenState extends State<SetupScreen> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l10n.importBackupSuccess)));
+          ).showSnackBar(
+            SnackBar(
+              content: Text(l10n.importBackupSuccess),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.errorImportingBackup}: $e')),
+          SnackBar(
+            content: Text('${l10n.errorImportingBackup}: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     }

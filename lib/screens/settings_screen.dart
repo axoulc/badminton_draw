@@ -310,14 +310,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (winnerPoints == null || loserPoints == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter valid numbers')),
+        const SnackBar(
+          content: Text('Please enter valid numbers'),
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
 
     if (winnerPoints < 0 || loserPoints < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Points cannot be negative')),
+        const SnackBar(
+          content: Text('Points cannot be negative'),
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
@@ -327,14 +333,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Settings saved successfully')),
+          const SnackBar(
+            content: Text('Settings saved successfully'),
+            duration: Duration(seconds: 2),
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }
