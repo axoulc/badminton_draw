@@ -132,9 +132,7 @@ class RoundsScreen extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
             duration: const Duration(seconds: 3),
@@ -464,9 +462,7 @@ class _MatchTile extends StatelessWidget {
       onResultRecorded(); // Refresh the UI
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.playersRearranged),
             duration: const Duration(seconds: 2),
@@ -475,9 +471,7 @@ class _MatchTile extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
             duration: const Duration(seconds: 3),

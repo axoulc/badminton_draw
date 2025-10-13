@@ -315,9 +315,7 @@ class _SetupScreenState extends State<SetupScreen> {
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.error}: $e'),
             duration: const Duration(seconds: 2),
@@ -474,9 +472,7 @@ class _SetupScreenState extends State<SetupScreen> {
         await provider.importBackupJson(jsonString);
 
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.importBackupSuccess),
               duration: const Duration(seconds: 2),

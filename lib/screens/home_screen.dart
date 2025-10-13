@@ -231,9 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await provider.importBackupJson(jsonString);
 
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.importBackupSuccess),
               duration: const Duration(seconds: 2),
