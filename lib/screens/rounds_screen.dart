@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
@@ -202,8 +203,11 @@ class _MatchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isCompleted = match.isCompleted;
+    final scoreSummary = _formatScoreSummary(match, l10n);
+    final scoreTooltip = isCompleted ? l10n.editScore : l10n.enterScore;
 
     return ListTile(
+      onTap: () => _openScoreDialog(context),
       title: Row(
         children: [
           Expanded(
@@ -211,7 +215,7 @@ class _MatchTile extends StatelessWidget {
               team: match.team1,
               isWinner: match.team1Won,
               isCompleted: isCompleted,
-              onTap: () => _recordResult(context, 'team1'),
+              onTap: () => _openScoreDialog(context),
             ),
           ),
           Padding(
@@ -223,115 +227,64 @@ class _MatchTile extends StatelessWidget {
               team: match.team2,
               isWinner: match.team2Won,
               isCompleted: isCompleted,
-              onTap: () => _recordResult(context, 'team2'),
+              onTap: () => _openScoreDialog(context),
             ),
           ),
         ],
       ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          scoreSummary ?? l10n.enterScorePrompt,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          IconButton(
+            icon: const Icon(Icons.sports_score),
+            tooltip: scoreTooltip,
+            onPressed: () => _openScoreDialog(context),
+          ),
           if (!isCompleted)
             IconButton(
               icon: const Icon(Icons.swap_horiz),
               tooltip: l10n.rearrangePlayers,
               onPressed: () => _showRearrangeDialog(context),
             ),
-          if (isCompleted)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              tooltip: l10n.editResult,
-              onPressed: () => _showEditResultDialog(context),
-            ),
         ],
       ),
     );
   }
 
-  Future<void> _recordResult(BuildContext context, String winnerId) async {
-    final provider = Provider.of<TournamentProvider>(context, listen: false);
+  Future<void> _openScoreDialog(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-
-    try {
-      await provider.recordMatchResult(
+    final success = await showDialog<bool>(
+      context: context,
+      builder: (context) => _ScoreEntryDialog(
+        match: match,
         roundId: roundId,
-        matchId: match.id,
-        winnerId: winnerId,
-      );
+      ),
+    );
 
+    if (success == true) {
       onResultRecorded();
-
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.resultRecorded)));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.scoreSaved)),
+        );
       }
     }
   }
 
-  void _showEditResultDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.editMatchResult),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l10n.selectWinner),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Icon(
-                match.team1Won ? Icons.check_circle : Icons.circle_outlined,
-                color: match.team1Won ? Colors.green : null,
-              ),
-              title: Text(
-                match.getTeamName(match.team1),
-                style: TextStyle(
-                  fontWeight: match.team1Won
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _recordResult(context, 'team1');
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                match.team2Won ? Icons.check_circle : Icons.circle_outlined,
-                color: match.team2Won ? Colors.green : null,
-              ),
-              title: Text(
-                match.getTeamName(match.team2),
-                style: TextStyle(
-                  fontWeight: match.team2Won
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _recordResult(context, 'team2');
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-        ],
-      ),
-    );
+  String? _formatScoreSummary(Match match, AppLocalizations l10n) {
+    if (match.gameScores.isEmpty) return null;
+    final gamesSummary = '${match.team1GamesWon}-${match.team2GamesWon}';
+    final gamesDetail = match.gameScores
+        .map((score) => '${score.team1Score}-${score.team2Score}')
+        .join(', ');
+    return '${l10n.games}: $gamesSummary · $gamesDetail';
   }
 
   void _showRearrangeDialog(BuildContext context) {
@@ -479,6 +432,281 @@ class _MatchTile extends StatelessWidget {
         );
       }
     }
+  }
+}
+
+class _ScoreEntryDialog extends StatefulWidget {
+  final Match match;
+  final String roundId;
+
+  const _ScoreEntryDialog({
+    required this.match,
+    required this.roundId,
+  });
+
+  @override
+  State<_ScoreEntryDialog> createState() => _ScoreEntryDialogState();
+}
+
+class _ScoreEntryDialogState extends State<_ScoreEntryDialog> {
+  final List<_GameRowData> _games = [];
+  String? _error;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.match.gameScores.isNotEmpty) {
+      for (final score in widget.match.gameScores) {
+        _games.add(
+          _GameRowData(
+            team1Initial: score.team1Score,
+            team2Initial: score.team2Score,
+          ),
+        );
+      }
+    } else {
+      // Start with two empty games (minimum required)
+      _games.add(_GameRowData());
+      _games.add(_GameRowData());
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final game in _games) {
+      game.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final team1Label = widget.match.getTeamName(widget.match.team1);
+    final team2Label = widget.match.getTeamName(widget.match.team2);
+
+    return AlertDialog(
+      title: Text(widget.match.isCompleted ? l10n.editScore : l10n.enterScore),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.scoreEntryDescription,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(
+              _games.length,
+              (index) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _GameScoreRow(
+                  index: index,
+                  data: _games[index],
+                  team1Label: team1Label,
+                  team2Label: team2Label,
+                  onRemove: _games.length > 2
+                      ? () => setState(() {
+                            _games.removeAt(index).dispose();
+                          })
+                      : null,
+                ),
+              ),
+            ),
+            if (_games.length < 3)
+              TextButton.icon(
+                onPressed: () => setState(() {
+                  _games.add(_GameRowData());
+                }),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.addGame),
+              ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _isSaving ? null : _saveScores,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.save),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _saveScores() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _error = null;
+      _isSaving = true;
+    });
+
+    final scores = <GameScore>[];
+
+    for (final game in _games) {
+      final team1Text = game.team1Controller.text.trim();
+      final team2Text = game.team2Controller.text.trim();
+
+      final bothEmpty = team1Text.isEmpty && team2Text.isEmpty;
+      if (bothEmpty) {
+        continue;
+      }
+
+      if (team1Text.isEmpty || team2Text.isEmpty) {
+        setState(() {
+          _error = l10n.scoreValidationNumeric;
+          _isSaving = false;
+        });
+        return;
+      }
+
+      final team1Score = int.tryParse(team1Text);
+      final team2Score = int.tryParse(team2Text);
+
+      if (team1Score == null || team2Score == null) {
+        setState(() {
+          _error = l10n.scoreValidationNumeric;
+          _isSaving = false;
+        });
+        return;
+      }
+
+      scores.add(
+        GameScore(team1Score: team1Score, team2Score: team2Score),
+      );
+    }
+
+    if (scores.length < 2) {
+      setState(() {
+        _error = l10n.scoreValidationIncomplete;
+        _isSaving = false;
+      });
+      return;
+    }
+
+    try {
+      final provider = Provider.of<TournamentProvider>(context, listen: false);
+      await provider.recordMatchResult(
+        roundId: widget.roundId,
+        matchId: widget.match.id,
+        gameScores: scores,
+      );
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      setState(() {
+        final message = e
+            .toString()
+            .replaceFirst('TournamentException: ', '')
+            .trim();
+        _error = message.isEmpty ? e.toString() : message;
+        _isSaving = false;
+      });
+    }
+  }
+}
+
+class _GameRowData {
+  final TextEditingController team1Controller;
+  final TextEditingController team2Controller;
+
+  _GameRowData({
+    int? team1Initial,
+    int? team2Initial,
+  })  : team1Controller = TextEditingController(
+          text: team1Initial != null ? '$team1Initial' : '',
+        ),
+        team2Controller = TextEditingController(
+          text: team2Initial != null ? '$team2Initial' : '',
+        );
+
+  void dispose() {
+    team1Controller.dispose();
+    team2Controller.dispose();
+  }
+}
+
+class _GameScoreRow extends StatelessWidget {
+  final int index;
+  final _GameRowData data;
+  final String team1Label;
+  final String team2Label;
+  final VoidCallback? onRemove;
+
+  const _GameScoreRow({
+    required this.index,
+    required this.data,
+    required this.team1Label,
+    required this.team2Label,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            '${l10n.game} ${index + 1}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ),
+        Expanded(
+          child: TextField(
+            controller: data.team1Controller,
+            decoration: InputDecoration(
+              labelText: team1Label,
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textInputAction: TextInputAction.next,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            controller: data.team2Controller,
+            decoration: InputDecoration(
+              labelText: team2Label,
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textInputAction: TextInputAction.next,
+          ),
+        ),
+        if (onRemove != null)
+          IconButton(
+            icon: const Icon(Icons.remove_circle_outline),
+            tooltip: l10n.delete,
+            onPressed: onRemove,
+          ),
+      ],
+    );
   }
 }
 

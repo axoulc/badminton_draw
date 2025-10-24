@@ -675,10 +675,20 @@ flutter build web --release --base-href "/<repo-name>/"
 ### Running Rounds
 
 1. **Generate Round**: Click "Generate Round" button
-2. **Record Results**: Tap on the winning team for each match
-3. **Edit Results**: Click edit icon (✏️) to change winner if needed
+2. **Record Scores**: Tap a match to enter the official badminton score (best-of-three to 21, win by 2)
+3. **Edit Scores**: Re-open any match to correct results if needed
 4. **View Rankings**: Check the Rankings tab for real-time standings
-5. **Continue**: Generate next round when all matches are complete
+5. **Continue**: Generate the next round when all matches are complete
+
+### Ranking Metrics
+
+The rankings screen highlights the tie-breakers that decide standings when teams share the same number of tournament points:
+
+- **Points**: Tournament points earned from wins/losses based on the scoring rules you configured.
+- **Diff Points**: Short for *points differential*. It is the total number of rallies scored minus rallies conceded across every game played. A higher value means a player or pair typically outscores opponents.
+- **Moy Points**: Short for *moyenne de points* (average points). It represents the average number of rallies scored per match, helping distinguish players who consistently put up more points even when overall results are similar.
+
+Diff Points and Moy Points are used as secondary tie-breakers after the main points total, ensuring standings reflect both match outcomes and scoring performance.
 
 ### Managing Your Tournament
 

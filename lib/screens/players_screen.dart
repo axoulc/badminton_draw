@@ -44,6 +44,10 @@ class PlayersScreen extends StatelessWidget {
           itemCount: players.length,
           itemBuilder: (context, index) {
             final player = players[index];
+            final pointDiff = player.pointDifferential;
+            final diffText = pointDiff > 0 ? '+$pointDiff' : '$pointDiff';
+            final averagePoints =
+                player.averagePointsFor.toStringAsFixed(1);
 
             return Card(
               child: ListTile(
@@ -52,11 +56,30 @@ class PlayersScreen extends StatelessWidget {
                   player.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: Row(
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Matches: ${player.totalMatches}'),
-                    const SizedBox(width: 16),
-                    Text('W: ${player.wins} / L: ${player.losses}'),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        Text('${l10n.matches}: ${player.totalMatches}'),
+                        Text('${l10n.wins}: ${player.wins}'),
+                        Text('${l10n.losses}: ${player.losses}'),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          '${l10n.games}: ${player.gamesWon}-${player.gamesLost}',
+                        ),
+                        Text('${l10n.pointsDiff}: $diffText'),
+                        Text('${l10n.avgPoints}: $averagePoints'),
+                      ],
+                    ),
                   ],
                 ),
                 trailing: Column(
@@ -64,14 +87,18 @@ class PlayersScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${player.points} pts',
+                      '${player.points}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    Text(
+                      l10n.points,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     if (player.totalMatches > 0)
                       Text(
-                        '${(player.winRate * 100).toStringAsFixed(0)}% WR',
+                        '${l10n.winRate}: ${(player.winRate * 100).toStringAsFixed(0)}%',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                   ],

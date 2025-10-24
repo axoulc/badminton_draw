@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/tournament.dart';
 import '../models/player.dart';
+import '../models/match.dart';
+import '../models/tournament.dart';
 import '../services/tournament_service.dart';
 
 /// App state provider managing the tournament
@@ -280,7 +281,7 @@ class TournamentProvider extends ChangeNotifier {
   Future<void> recordMatchResult({
     required String roundId,
     required String matchId,
-    required String winnerId,
+    required List<GameScore> gameScores,
   }) async {
     if (_tournament == null) return;
 
@@ -290,7 +291,7 @@ class TournamentProvider extends ChangeNotifier {
         _tournament!,
         roundId,
         matchId,
-        winnerId,
+        gameScores,
       );
       await _saveTournament();
       _clearError();

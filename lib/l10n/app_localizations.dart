@@ -113,6 +113,24 @@ class AppLocalizations {
   String get team => _localizedValues[locale.languageCode]!['team']!;
   String get playersRearranged =>
       _localizedValues[locale.languageCode]!['players_rearranged']!;
+  String get enterScore =>
+      _localizedValues[locale.languageCode]!['enter_score']!;
+  String get editScore =>
+      _localizedValues[locale.languageCode]!['edit_score']!;
+  String get enterScorePrompt =>
+      _localizedValues[locale.languageCode]!['enter_score_prompt']!;
+  String get addGame =>
+      _localizedValues[locale.languageCode]!['add_game']!;
+  String get scoreEntryDescription =>
+      _localizedValues[locale.languageCode]!['score_entry_description']!;
+  String get scoreSaved =>
+      _localizedValues[locale.languageCode]!['score_saved']!;
+  String get scoreValidationNumeric =>
+      _localizedValues[locale.languageCode]!['score_validation_numeric']!;
+  String get scoreValidationIncomplete =>
+      _localizedValues[locale.languageCode]!['score_validation_incomplete']!;
+  String get game => _localizedValues[locale.languageCode]!['game']!;
+  String get games => _localizedValues[locale.languageCode]!['games']!;
 
   // Rankings
   String get rank => _localizedValues[locale.languageCode]!['rank']!;
@@ -120,6 +138,12 @@ class AppLocalizations {
   String get wins => _localizedValues[locale.languageCode]!['wins']!;
   String get losses => _localizedValues[locale.languageCode]!['losses']!;
   String get winRate => _localizedValues[locale.languageCode]!['win_rate']!;
+  String get matches =>
+      _localizedValues[locale.languageCode]!['matches']!;
+  String get pointsDiff =>
+      _localizedValues[locale.languageCode]!['points_diff']!;
+  String get avgPoints =>
+      _localizedValues[locale.languageCode]!['avg_points']!;
 
   // Settings
   String get tournamentSettings =>
@@ -239,7 +263,18 @@ class AppLocalizations {
       'edit_result': 'Edit result',
       'edit_match_result': 'Edit Match Result',
       'select_winner': 'Select the winner:',
-      'result_recorded': 'Result recorded',
+      'result_recorded': 'Score recorded',
+      'enter_score': 'Enter score',
+      'edit_score': 'Edit score',
+      'enter_score_prompt': 'Tap to enter the official match score',
+      'add_game': 'Add game',
+      'score_entry_description':
+          'Provide the official points for each game (best of three to 21, win by 2).',
+      'score_saved': 'Score saved',
+      'score_validation_numeric': 'Scores must be numbers.',
+      'score_validation_incomplete': 'Enter at least two completed games.',
+      'game': 'Game',
+      'games': 'Games',
       'regenerate_round': 'Regenerate Round',
       'regenerate_round_confirmation':
           'This will delete all current matches in this round and generate new random pairings. This action cannot be undone.',
@@ -258,6 +293,9 @@ class AppLocalizations {
       'wins': 'Wins',
       'losses': 'Losses',
       'win_rate': 'Win Rate',
+      'matches': 'Matches',
+      'points_diff': 'Points diff',
+      'avg_points': 'Avg points',
 
       // Settings
       'tournament_settings': 'Tournament Settings',
@@ -357,7 +395,19 @@ class AppLocalizations {
       'edit_result': 'Modifier le résultat',
       'edit_match_result': 'Modifier le Résultat du Match',
       'select_winner': 'Sélectionnez le gagnant :',
-      'result_recorded': 'Résultat enregistré',
+      'result_recorded': 'Score enregistré',
+      'enter_score': 'Saisir le score',
+      'edit_score': 'Modifier le score',
+      'enter_score_prompt': 'Touchez pour saisir le score officiel du match',
+      'add_game': 'Ajouter une manche',
+      'score_entry_description':
+          'Saisissez le score officiel de chaque manche (meilleur des trois à 21, 2 points d\'écart).',
+      'score_saved': 'Score enregistré',
+      'score_validation_numeric': 'Les scores doivent être des nombres.',
+      'score_validation_incomplete':
+          'Renseignez au moins deux manches terminées.',
+      'game': 'Manche',
+      'games': 'Manches',
       'regenerate_round': 'Régénérer la Manche',
       'regenerate_round_confirmation':
           'Ceci supprimera tous les matchs actuels de cette manche et générera de nouveaux appariements aléatoires. Cette action ne peut pas être annulée.',
@@ -376,6 +426,9 @@ class AppLocalizations {
       'wins': 'Victoires',
       'losses': 'Défaites',
       'win_rate': 'Taux de Victoire',
+      'matches': 'Matchs',
+      'points_diff': 'Diff. points',
+      'avg_points': 'Moy. points',
 
       // Settings
       'tournament_settings': 'Paramètres du Tournoi',

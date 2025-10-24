@@ -207,45 +207,54 @@ class TournamentService {
     );
   }
 
-  /// Record match result
+  /// Record match result using badminton game scores
   Tournament recordMatchResult(
     Tournament tournament,
     String roundId,
     String matchId,
-    String winnerId, // 'team1' or 'team2'
+    List<GameScore> gameScores,
   ) {
-    if (winnerId != 'team1' && winnerId != 'team2') {
-      throw TournamentException('Winner must be either "team1" or "team2"');
+    if (gameScores.isEmpty) {
+      throw TournamentException('At least two game scores are required');
     }
 
-    // Find the original match before updating
-    final originalMatch = tournament.rounds
-        .firstWhere((r) => r.id == roundId)
-        .matches
-        .firstWhere((m) => m.id == matchId);
+    final normalizedScores = List<GameScore>.from(gameScores);
+    _validateGameScores(normalizedScores);
 
-    // Check if match was already completed
+    // Locate round and match
+    final roundIndex = tournament.rounds.indexWhere((round) => round.id == roundId);
+    if (roundIndex == -1) {
+      throw TournamentException('Round not found');
+    }
+
+    final round = tournament.rounds[roundIndex];
+    final matchIndex = round.matches.indexWhere((match) => match.id == matchId);
+    if (matchIndex == -1) {
+      throw TournamentException('Match not found');
+    }
+
+    final originalMatch = round.matches[matchIndex];
     final wasCompleted = originalMatch.isCompleted;
     final oldWinnerId = originalMatch.winnerId;
 
-    // Find the round and match
-    final updatedRounds = tournament.rounds.map((round) {
-      if (round.id == roundId) {
-        final updatedMatches = round.matches.map((match) {
-          if (match.id == matchId) {
-            return match.copyWith(winnerId: winnerId);
-          }
-          return match;
-        }).toList();
-        return round.copyWith(matches: updatedMatches);
-      }
-      return round;
-    }).toList();
+    final winnerId = _determineWinnerFromScores(normalizedScores);
+
+    final updatedMatch = originalMatch.copyWith(
+      winnerId: winnerId,
+      gameScores: normalizedScores,
+    );
+
+    // Update the round with the modified match
+    final updatedMatches = List<Match>.from(round.matches);
+    updatedMatches[matchIndex] = updatedMatch;
+    final updatedRound = round.copyWith(matches: updatedMatches);
+
+    final updatedRounds = List<Round>.from(tournament.rounds);
+    updatedRounds[roundIndex] = updatedRound;
 
     // Update player statistics
     var updatedPlayers = tournament.players;
 
-    // If match was already completed, first remove old scores
     if (wasCompleted && oldWinnerId != null) {
       updatedPlayers = _removeMatchStats(
         updatedPlayers,
@@ -255,10 +264,9 @@ class TournamentService {
       );
     }
 
-    // Add new scores
     updatedPlayers = _addMatchStats(
       updatedPlayers,
-      originalMatch,
+      updatedMatch,
       winnerId,
       tournament,
     );
@@ -279,21 +287,51 @@ class TournamentService {
   ) {
     final winningTeam = winnerId == 'team1' ? match.team1 : match.team2;
     final losingTeam = winnerId == 'team1' ? match.team2 : match.team1;
+    final team1GamesWon = match.team1GamesWon;
+    final team2GamesWon = match.team2GamesWon;
+    final team1PointsFor = match.team1PointsFor;
+    final team2PointsFor = match.team2PointsFor;
 
     return players.map((player) {
       // Check if player was in winning team
       if (winningTeam.any((p) => p.id == player.id)) {
+        final gamesWonDelta =
+            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
+        final gamesLostDelta =
+            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
+        final pointsForDelta =
+            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+        final pointsAgainstDelta =
+            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+
         return player.copyWith(
           wins: player.wins - 1,
           points: player.points - tournament.winnerPoints,
+          gamesWon: player.gamesWon - gamesWonDelta,
+          gamesLost: player.gamesLost - gamesLostDelta,
+          pointsFor: player.pointsFor - pointsForDelta,
+          pointsAgainst: player.pointsAgainst - pointsAgainstDelta,
         );
       }
 
       // Check if player was in losing team
       if (losingTeam.any((p) => p.id == player.id)) {
+        final gamesWonDelta =
+            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
+        final gamesLostDelta =
+            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
+        final pointsForDelta =
+            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+        final pointsAgainstDelta =
+            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+
         return player.copyWith(
           losses: player.losses - 1,
           points: player.points - tournament.loserPoints,
+          gamesWon: player.gamesWon - gamesWonDelta,
+          gamesLost: player.gamesLost - gamesLostDelta,
+          pointsFor: player.pointsFor - pointsForDelta,
+          pointsAgainst: player.pointsAgainst - pointsAgainstDelta,
         );
       }
 
@@ -310,26 +348,137 @@ class TournamentService {
   ) {
     final winningTeam = winnerId == 'team1' ? match.team1 : match.team2;
     final losingTeam = winnerId == 'team1' ? match.team2 : match.team1;
+    final team1GamesWon = match.team1GamesWon;
+    final team2GamesWon = match.team2GamesWon;
+    final team1PointsFor = match.team1PointsFor;
+    final team2PointsFor = match.team2PointsFor;
 
     return players.map((player) {
       // Check if player is in winning team
       if (winningTeam.any((p) => p.id == player.id)) {
+        final gamesWonDelta =
+            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
+        final gamesLostDelta =
+            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
+        final pointsForDelta =
+            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+        final pointsAgainstDelta =
+            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+
         return player.copyWith(
           wins: player.wins + 1,
           points: player.points + tournament.winnerPoints,
+          gamesWon: player.gamesWon + gamesWonDelta,
+          gamesLost: player.gamesLost + gamesLostDelta,
+          pointsFor: player.pointsFor + pointsForDelta,
+          pointsAgainst: player.pointsAgainst + pointsAgainstDelta,
         );
       }
 
       // Check if player is in losing team
       if (losingTeam.any((p) => p.id == player.id)) {
+        final gamesWonDelta =
+            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
+        final gamesLostDelta =
+            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
+        final pointsForDelta =
+            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+        final pointsAgainstDelta =
+            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+
         return player.copyWith(
           losses: player.losses + 1,
           points: player.points + tournament.loserPoints,
+          gamesWon: player.gamesWon + gamesWonDelta,
+          gamesLost: player.gamesLost + gamesLostDelta,
+          pointsFor: player.pointsFor + pointsForDelta,
+          pointsAgainst: player.pointsAgainst + pointsAgainstDelta,
         );
       }
 
       return player;
     }).toList();
+  }
+
+  void _validateGameScores(List<GameScore> scores) {
+    if (scores.length < 2 || scores.length > 3) {
+      throw TournamentException(
+        'Badminton matches must be played as best of three games',
+      );
+    }
+
+    int team1Wins = 0;
+    int team2Wins = 0;
+
+    for (int i = 0; i < scores.length; i++) {
+      final score = scores[i];
+      final team1 = score.team1Score;
+      final team2 = score.team2Score;
+
+      if (team1 < 0 || team2 < 0) {
+        throw TournamentException('Scores cannot be negative');
+      }
+
+      if (team1 == team2) {
+        throw TournamentException('A game cannot end in a tie');
+      }
+
+      final winnerScore = team1 > team2 ? team1 : team2;
+      final loserScore = team1 > team2 ? team2 : team1;
+
+      if (winnerScore > 30) {
+        throw TournamentException('Scores cannot exceed 30 points in badminton');
+      }
+
+      if (winnerScore < 21) {
+        throw TournamentException('Winner must reach at least 21 points');
+      }
+
+      if (winnerScore == 30) {
+        if (loserScore != 29) {
+          throw TournamentException(
+            'Reaching 30 points is only possible at 29-29 (final score 30-29)',
+          );
+        }
+      } else if (winnerScore - loserScore < 2) {
+        throw TournamentException(
+          'Games must be won by at least two points (unless 30-29)',
+        );
+      }
+
+      if (team1 > team2) {
+        team1Wins++;
+      } else {
+        team2Wins++;
+      }
+
+      final isLastGame = i == scores.length - 1;
+      if (!isLastGame && (team1Wins == 2 || team2Wins == 2)) {
+        throw TournamentException(
+          'No additional games allowed after a team wins two games',
+        );
+      }
+    }
+
+    if (team1Wins == team2Wins) {
+      throw TournamentException('Match must have a decisive winner');
+    }
+
+    if (team1Wins > 2 || team2Wins > 2) {
+      throw TournamentException('A team cannot win more than two games');
+    }
+
+    if (team1Wins < 2 && team2Wins < 2) {
+      throw TournamentException('Winner must win two games in badminton');
+    }
+  }
+
+  String _determineWinnerFromScores(List<GameScore> scores) {
+    final team1Wins = scores
+        .where((score) => score.team1Score > score.team2Score)
+        .length;
+    final team2Wins = scores.length - team1Wins;
+    return team1Wins > team2Wins ? 'team1' : 'team2';
   }
 
   /// Complete the tournament
@@ -345,7 +494,15 @@ class TournamentService {
     // Reset all player stats
     final resetPlayers = tournament.players
         .map(
-          (p) => Player(id: p.id, name: p.name, wins: 0, losses: 0, points: 0),
+          (p) => p.copyWith(
+            wins: 0,
+            losses: 0,
+            points: 0,
+            gamesWon: 0,
+            gamesLost: 0,
+            pointsFor: 0,
+            pointsAgainst: 0,
+          ),
         )
         .toList();
 
@@ -365,6 +522,16 @@ class TournamentService {
       // First sort by points (descending)
       final pointsCompare = b.points.compareTo(a.points);
       if (pointsCompare != 0) return pointsCompare;
+
+      // Tie-breaker: better point differential (average margin)
+      final differentialCompare =
+          b.pointDifferential.compareTo(a.pointDifferential);
+      if (differentialCompare != 0) return differentialCompare;
+
+      // Next: more points scored on average per match
+      final averagePointsCompare =
+          b.averagePointsFor.compareTo(a.averagePointsFor);
+      if (averagePointsCompare != 0) return averagePointsCompare;
 
       // Then by win rate (descending)
       final winRateCompare = b.winRate.compareTo(a.winRate);

@@ -45,6 +45,12 @@ class RankingsScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final player = rankings[index];
             final rank = index + 1;
+            final diff = player.pointDifferential;
+            final diffText = diff > 0 ? '+$diff' : '$diff';
+            final winRatePercent =
+                '${(player.winRate * 100).toStringAsFixed(0)}%';
+            final averagePoints =
+                player.averagePointsFor.toStringAsFixed(1);
 
             // Medal colors for top 3
             Color? medalColor;
@@ -73,33 +79,44 @@ class RankingsScreen extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        _StatChip(
-                          label: 'Wins',
-                          value: '${player.wins}',
-                          color: Colors.green,
-                        ),
-                        const SizedBox(width: 8),
-                        _StatChip(
-                          label: 'Losses',
-                          value: '${player.losses}',
-                          color: Colors.red,
-                        ),
-                        const SizedBox(width: 8),
-                        _StatChip(
-                          label: 'Win Rate',
-                          value:
-                              '${(player.winRate * 100).toStringAsFixed(0)}%',
-                          color: Colors.blue,
-                        ),
-                      ],
-                    ),
-                  ],
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _StatChip(
+                        label: l10n.wins,
+                        value: '${player.wins}',
+                        color: Colors.green,
+                      ),
+                      _StatChip(
+                        label: l10n.losses,
+                        value: '${player.losses}',
+                        color: Colors.red,
+                      ),
+                      _StatChip(
+                        label: l10n.winRate,
+                        value: winRatePercent,
+                        color: Colors.blue,
+                      ),
+                      _StatChip(
+                        label: l10n.games,
+                        value: '${player.gamesWon}-${player.gamesLost}',
+                        color: Colors.orange,
+                      ),
+                      _StatChip(
+                        label: l10n.pointsDiff,
+                        value: diffText,
+                        color: Colors.purple,
+                      ),
+                      _StatChip(
+                        label: l10n.avgPoints,
+                        value: averagePoints,
+                        color: Colors.teal,
+                      ),
+                    ],
+                  ),
                 ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -114,7 +131,7 @@ class RankingsScreen extends StatelessWidget {
                           ),
                     ),
                     Text(
-                      'points',
+                      l10n.points,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
