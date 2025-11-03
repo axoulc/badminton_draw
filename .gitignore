@@ -228,3 +228,4 @@ deployment/
 *.db
 
 .dart_tool/
+.flutter-plugins-dependencies
