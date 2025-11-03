@@ -331,18 +331,15 @@ class _MatchTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final success = await showDialog<bool>(
       context: context,
-      builder: (context) => _ScoreEntryDialog(
-        match: match,
-        roundId: roundId,
-      ),
+      builder: (context) => _ScoreEntryDialog(match: match, roundId: roundId),
     );
 
     if (success == true) {
       onResultRecorded();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.scoreSaved)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.scoreSaved)));
       }
     }
   }
@@ -508,10 +505,7 @@ class _ScoreEntryDialog extends StatefulWidget {
   final Match match;
   final String roundId;
 
-  const _ScoreEntryDialog({
-    required this.match,
-    required this.roundId,
-  });
+  const _ScoreEntryDialog({required this.match, required this.roundId});
 
   @override
   State<_ScoreEntryDialog> createState() => _ScoreEntryDialogState();
@@ -578,8 +572,8 @@ class _ScoreEntryDialogState extends State<_ScoreEntryDialog> {
                   team2Label: team2Label,
                   onRemove: _games.length > 2
                       ? () => setState(() {
-                            _games.removeAt(index).dispose();
-                          })
+                          _games.removeAt(index).dispose();
+                        })
                       : null,
                 ),
               ),
@@ -597,9 +591,7 @@ class _ScoreEntryDialogState extends State<_ScoreEntryDialog> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   _error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
           ],
@@ -661,9 +653,7 @@ class _ScoreEntryDialogState extends State<_ScoreEntryDialog> {
         return;
       }
 
-      scores.add(
-        GameScore(team1Score: team1Score, team2Score: team2Score),
-      );
+      scores.add(GameScore(team1Score: team1Score, team2Score: team2Score));
     }
 
     if (scores.length < 2) {
@@ -701,15 +691,13 @@ class _GameRowData {
   final TextEditingController team1Controller;
   final TextEditingController team2Controller;
 
-  _GameRowData({
-    int? team1Initial,
-    int? team2Initial,
-  })  : team1Controller = TextEditingController(
-          text: team1Initial != null ? '$team1Initial' : '',
-        ),
-        team2Controller = TextEditingController(
-          text: team2Initial != null ? '$team2Initial' : '',
-        );
+  _GameRowData({int? team1Initial, int? team2Initial})
+    : team1Controller = TextEditingController(
+        text: team1Initial != null ? '$team1Initial' : '',
+      ),
+      team2Controller = TextEditingController(
+        text: team2Initial != null ? '$team2Initial' : '',
+      );
 
   void dispose() {
     team1Controller.dispose();
@@ -748,9 +736,7 @@ class _GameScoreRow extends StatelessWidget {
         Expanded(
           child: TextField(
             controller: data.team1Controller,
-            decoration: InputDecoration(
-              labelText: team1Label,
-            ),
+            decoration: InputDecoration(labelText: team1Label),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textInputAction: TextInputAction.next,
@@ -760,9 +746,7 @@ class _GameScoreRow extends StatelessWidget {
         Expanded(
           child: TextField(
             controller: data.team2Controller,
-            decoration: InputDecoration(
-              labelText: team2Label,
-            ),
+            decoration: InputDecoration(labelText: team2Label),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textInputAction: TextInputAction.next,
