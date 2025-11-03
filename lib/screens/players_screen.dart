@@ -50,57 +50,111 @@ class PlayersScreen extends StatelessWidget {
                 player.averagePointsFor.toStringAsFixed(1);
 
             return Card(
-              child: ListTile(
-                leading: CircleAvatar(child: Text('${index + 1}')),
-                title: Text(
-                  player.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
-                      children: [
-                        Text('${l10n.matches}: ${player.totalMatches}'),
-                        Text('${l10n.wins}: ${player.wins}'),
-                        Text('${l10n.losses}: ${player.losses}'),
-                      ],
+                    CircleAvatar(child: Text('${index + 1}')),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            player.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              decoration: player.isEnabled ? null : TextDecoration.lineThrough,
+                              color: player.isEnabled ? null : Theme.of(context).disabledColor,
+                            ),
+                          ),
+                          if (!player.isEnabled)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Text(
+                                'Disabled',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 4,
+                            children: [
+                              Text('${l10n.matches}: ${player.totalMatches}', style: const TextStyle(fontSize: 12)),
+                              Text('${l10n.wins}: ${player.wins}', style: const TextStyle(fontSize: 12)),
+                              Text('${l10n.losses}: ${player.losses}', style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 4,
+                            children: [
+                              Text(
+                                '${l10n.games}: ${player.gamesWon}-${player.gamesLost}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text('${l10n.pointsDiff}: $diffText', style: const TextStyle(fontSize: 12)),
+                              Text('${l10n.avgPoints}: $averagePoints', style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
+                    const SizedBox(width: 8),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${l10n.games}: ${player.gamesWon}-${player.gamesLost}',
+                          '${player.points}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        Text('${l10n.pointsDiff}: $diffText'),
-                        Text('${l10n.avgPoints}: $averagePoints'),
+                        Text(
+                          l10n.points,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        if (player.totalMatches > 0)
+                          Text(
+                            '${l10n.winRate}: ${(player.winRate * 100).toStringAsFixed(0)}%',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                       ],
                     ),
-                  ],
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${player.points}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: IconButton(
+                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          player.isEnabled ? Icons.check_circle : Icons.cancel,
+                          color: player.isEnabled 
+                            ? Theme.of(context).colorScheme.primary 
+                            : Theme.of(context).disabledColor,
+                        ),
+                        onPressed: () async {
+                          try {
+                            await provider.togglePlayerEnabled(player.id);
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          }
+                        },
+                        tooltip: player.isEnabled ? 'Disable player' : 'Enable player',
                       ),
                     ),
-                    Text(
-                      l10n.points,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (player.totalMatches > 0)
-                      Text(
-                        '${l10n.winRate}: ${(player.winRate * 100).toStringAsFixed(0)}%',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
                   ],
                 ),
               ),

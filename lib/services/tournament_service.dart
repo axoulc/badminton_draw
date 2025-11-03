@@ -112,6 +112,21 @@ class TournamentService {
     );
   }
 
+  /// Toggle player enabled status
+  Tournament togglePlayerEnabled(Tournament tournament, String playerId) {
+    final updatedPlayers = tournament.players.map((p) {
+      if (p.id == playerId) {
+        return p.copyWith(isEnabled: !p.isEnabled);
+      }
+      return p;
+    }).toList();
+
+    return tournament.copyWith(
+      players: updatedPlayers,
+      updatedAt: DateTime.now(),
+    );
+  }
+
   /// Import multiple players from JSON list
   Tournament importPlayers(Tournament tournament, List<String> playerNames) {
     if (tournament.status != TournamentStatus.setup) {
@@ -192,10 +207,13 @@ class TournamentService {
       throw TournamentException('Tournament must be active to generate rounds');
     }
 
+    // Filter to only include enabled players
+    final enabledPlayers = tournament.players.where((p) => p.isEnabled).toList();
+
     // Generate the round
     final round = _pairingService.generateRound(
       tournament: tournament,
-      players: tournament.players,
+      players: enabledPlayers,
     );
 
     // Add to tournament

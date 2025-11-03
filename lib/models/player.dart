@@ -9,6 +9,7 @@ class Player {
   final int gamesLost;
   final int pointsFor;
   final int pointsAgainst;
+  final bool isEnabled;
 
   Player({
     required this.id,
@@ -20,6 +21,7 @@ class Player {
     this.gamesLost = 0,
     this.pointsFor = 0,
     this.pointsAgainst = 0,
+    this.isEnabled = true,
   });
 
   /// Create a Player from JSON
@@ -34,6 +36,7 @@ class Player {
       gamesLost: json['gamesLost'] as int? ?? 0,
       pointsFor: json['pointsFor'] as int? ?? 0,
       pointsAgainst: json['pointsAgainst'] as int? ?? 0,
+      isEnabled: json['isEnabled'] as bool? ?? true,
     );
   }
 
@@ -49,6 +52,7 @@ class Player {
       'gamesLost': gamesLost,
       'pointsFor': pointsFor,
       'pointsAgainst': pointsAgainst,
+      'isEnabled': isEnabled,
     };
   }
 
@@ -83,6 +87,7 @@ class Player {
     int? gamesLost,
     int? pointsFor,
     int? pointsAgainst,
+    bool? isEnabled,
   }) {
     return Player(
       id: id ?? this.id,
@@ -94,6 +99,7 @@ class Player {
       gamesLost: gamesLost ?? this.gamesLost,
       pointsFor: pointsFor ?? this.pointsFor,
       pointsAgainst: pointsAgainst ?? this.pointsAgainst,
+      isEnabled: isEnabled ?? this.isEnabled,
     );
   }
 
@@ -107,6 +113,6 @@ class Player {
 
   @override
   String toString() {
-    return 'Player{id: $id, name: $name, wins: $wins, losses: $losses, points: $points, gamesWon: $gamesWon, gamesLost: $gamesLost, pointsFor: $pointsFor, pointsAgainst: $pointsAgainst}';
+    return 'Player{id: $id, name: $name, wins: $wins, losses: $losses, points: $points, gamesWon: $gamesWon, gamesLost: $gamesLost, pointsFor: $pointsFor, pointsAgainst: $pointsAgainst, isEnabled: $isEnabled}';
   }
 }

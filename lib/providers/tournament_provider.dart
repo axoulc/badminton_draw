@@ -167,6 +167,23 @@ class TournamentProvider extends ChangeNotifier {
     }
   }
 
+  /// Toggle player enabled status
+  Future<void> togglePlayerEnabled(String playerId) async {
+    if (_tournament == null) return;
+
+    _setLoading(true);
+    try {
+      _tournament = _tournamentService.togglePlayerEnabled(_tournament!, playerId);
+      await _saveTournament();
+      _clearError();
+    } catch (e) {
+      _setError('Failed to toggle player status: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Import multiple players from list
   Future<void> importPlayers(List<String> playerNames) async {
     if (_tournament == null) return;
