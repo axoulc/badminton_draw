@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/tournament_provider.dart';
 import '../models/match.dart';
+import '../models/tournament.dart';
+import '../models/round.dart';
 
 /// Rounds screen showing all matches organized by rounds
 class RoundsScreen extends StatelessWidget {
@@ -95,15 +97,24 @@ class RoundsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            children: round.matches.map((match) {
-                              return _MatchTile(
-                                match: match,
-                                roundId: round.id,
-                                onResultRecorded: () {
-                                  // Refresh handled by provider
-                                },
-                              );
-                            }).toList(),
+                            children: [
+                              ...round.matches.map((match) {
+                                return _MatchTile(
+                                  match: match,
+                                  roundId: round.id,
+                                  onResultRecorded: () {
+                                    // Refresh handled by provider
+                                  },
+                                );
+                              }).toList(),
+                              // Available players section
+                              _buildAvailablePlayers(
+                                context,
+                                tournament,
+                                round,
+                                l10n,
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -112,6 +123,64 @@ class RoundsScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  /// Build available players widget
+  Widget _buildAvailablePlayers(
+    BuildContext context,
+    Tournament tournament,
+    Round round,
+    AppLocalizations l10n,
+  ) {
+    // Get all players in current round
+    final playersInRound = <String>{};
+    for (final match in round.matches) {
+      for (final player in match.team1) {
+        playersInRound.add(player.id);
+      }
+      for (final player in match.team2) {
+        playersInRound.add(player.id);
+      }
+    }
+
+    // Get available players (enabled and not in round)
+    final availablePlayers = tournament.players
+        .where((p) => p.isEnabled && !playersInRound.contains(p.id))
+        .toList();
+
+    if (availablePlayers.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Text(
+          'All available players are in this round',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Available players:',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: availablePlayers.map((player) {
+              return Chip(
+                label: Text(player.name),
+                avatar: CircleAvatar(child: Text(player.name[0].toUpperCase())),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 

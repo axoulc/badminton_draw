@@ -208,7 +208,9 @@ class TournamentService {
     }
 
     // Filter to only include enabled players
-    final enabledPlayers = tournament.players.where((p) => p.isEnabled).toList();
+    final enabledPlayers = tournament.players
+        .where((p) => p.isEnabled)
+        .toList();
 
     // Generate the round
     final round = _pairingService.generateRound(
@@ -240,7 +242,9 @@ class TournamentService {
     _validateGameScores(normalizedScores);
 
     // Locate round and match
-    final roundIndex = tournament.rounds.indexWhere((round) => round.id == roundId);
+    final roundIndex = tournament.rounds.indexWhere(
+      (round) => round.id == roundId,
+    );
     if (roundIndex == -1) {
       throw TournamentException('Round not found');
     }
@@ -313,14 +317,18 @@ class TournamentService {
     return players.map((player) {
       // Check if player was in winning team
       if (winningTeam.any((p) => p.id == player.id)) {
-        final gamesWonDelta =
-            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
-        final gamesLostDelta =
-            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
-        final pointsForDelta =
-            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
-        final pointsAgainstDelta =
-            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+        final gamesWonDelta = winnerId == 'team1'
+            ? team1GamesWon
+            : team2GamesWon;
+        final gamesLostDelta = winnerId == 'team1'
+            ? team2GamesWon
+            : team1GamesWon;
+        final pointsForDelta = winnerId == 'team1'
+            ? team1PointsFor
+            : team2PointsFor;
+        final pointsAgainstDelta = winnerId == 'team1'
+            ? team2PointsFor
+            : team1PointsFor;
 
         return player.copyWith(
           wins: player.wins - 1,
@@ -334,14 +342,18 @@ class TournamentService {
 
       // Check if player was in losing team
       if (losingTeam.any((p) => p.id == player.id)) {
-        final gamesWonDelta =
-            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
-        final gamesLostDelta =
-            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
-        final pointsForDelta =
-            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
-        final pointsAgainstDelta =
-            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+        final gamesWonDelta = winnerId == 'team1'
+            ? team2GamesWon
+            : team1GamesWon;
+        final gamesLostDelta = winnerId == 'team1'
+            ? team1GamesWon
+            : team2GamesWon;
+        final pointsForDelta = winnerId == 'team1'
+            ? team2PointsFor
+            : team1PointsFor;
+        final pointsAgainstDelta = winnerId == 'team1'
+            ? team1PointsFor
+            : team2PointsFor;
 
         return player.copyWith(
           losses: player.losses - 1,
@@ -374,14 +386,18 @@ class TournamentService {
     return players.map((player) {
       // Check if player is in winning team
       if (winningTeam.any((p) => p.id == player.id)) {
-        final gamesWonDelta =
-            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
-        final gamesLostDelta =
-            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
-        final pointsForDelta =
-            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
-        final pointsAgainstDelta =
-            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
+        final gamesWonDelta = winnerId == 'team1'
+            ? team1GamesWon
+            : team2GamesWon;
+        final gamesLostDelta = winnerId == 'team1'
+            ? team2GamesWon
+            : team1GamesWon;
+        final pointsForDelta = winnerId == 'team1'
+            ? team1PointsFor
+            : team2PointsFor;
+        final pointsAgainstDelta = winnerId == 'team1'
+            ? team2PointsFor
+            : team1PointsFor;
 
         return player.copyWith(
           wins: player.wins + 1,
@@ -395,14 +411,18 @@ class TournamentService {
 
       // Check if player is in losing team
       if (losingTeam.any((p) => p.id == player.id)) {
-        final gamesWonDelta =
-            winnerId == 'team1' ? team2GamesWon : team1GamesWon;
-        final gamesLostDelta =
-            winnerId == 'team1' ? team1GamesWon : team2GamesWon;
-        final pointsForDelta =
-            winnerId == 'team1' ? team2PointsFor : team1PointsFor;
-        final pointsAgainstDelta =
-            winnerId == 'team1' ? team1PointsFor : team2PointsFor;
+        final gamesWonDelta = winnerId == 'team1'
+            ? team2GamesWon
+            : team1GamesWon;
+        final gamesLostDelta = winnerId == 'team1'
+            ? team1GamesWon
+            : team2GamesWon;
+        final pointsForDelta = winnerId == 'team1'
+            ? team2PointsFor
+            : team1PointsFor;
+        final pointsAgainstDelta = winnerId == 'team1'
+            ? team1PointsFor
+            : team2PointsFor;
 
         return player.copyWith(
           losses: player.losses + 1,
@@ -445,7 +465,9 @@ class TournamentService {
       final loserScore = team1 > team2 ? team2 : team1;
 
       if (winnerScore > 30) {
-        throw TournamentException('Scores cannot exceed 30 points in badminton');
+        throw TournamentException(
+          'Scores cannot exceed 30 points in badminton',
+        );
       }
 
       if (winnerScore < 21) {
@@ -542,13 +564,15 @@ class TournamentService {
       if (pointsCompare != 0) return pointsCompare;
 
       // Tie-breaker: better point differential (average margin)
-      final differentialCompare =
-          b.pointDifferential.compareTo(a.pointDifferential);
+      final differentialCompare = b.pointDifferential.compareTo(
+        a.pointDifferential,
+      );
       if (differentialCompare != 0) return differentialCompare;
 
       // Next: more points scored on average per match
-      final averagePointsCompare =
-          b.averagePointsFor.compareTo(a.averagePointsFor);
+      final averagePointsCompare = b.averagePointsFor.compareTo(
+        a.averagePointsFor,
+      );
       if (averagePointsCompare != 0) return averagePointsCompare;
 
       // Then by win rate (descending)

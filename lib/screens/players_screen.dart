@@ -46,8 +46,7 @@ class PlayersScreen extends StatelessWidget {
             final player = players[index];
             final pointDiff = player.pointDifferential;
             final diffText = pointDiff > 0 ? '+$pointDiff' : '$pointDiff';
-            final averagePoints =
-                player.averagePointsFor.toStringAsFixed(1);
+            final averagePoints = player.averagePointsFor.toStringAsFixed(1);
 
             return Card(
               child: Padding(
@@ -64,8 +63,12 @@ class PlayersScreen extends StatelessWidget {
                             player.name,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              decoration: player.isEnabled ? null : TextDecoration.lineThrough,
-                              color: player.isEnabled ? null : Theme.of(context).disabledColor,
+                              decoration: player.isEnabled
+                                  ? null
+                                  : TextDecoration.lineThrough,
+                              color: player.isEnabled
+                                  ? null
+                                  : Theme.of(context).disabledColor,
                             ),
                           ),
                           if (!player.isEnabled)
@@ -85,9 +88,18 @@ class PlayersScreen extends StatelessWidget {
                             spacing: 12,
                             runSpacing: 4,
                             children: [
-                              Text('${l10n.matches}: ${player.totalMatches}', style: const TextStyle(fontSize: 12)),
-                              Text('${l10n.wins}: ${player.wins}', style: const TextStyle(fontSize: 12)),
-                              Text('${l10n.losses}: ${player.losses}', style: const TextStyle(fontSize: 12)),
+                              Text(
+                                '${l10n.matches}: ${player.totalMatches}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                '${l10n.wins}: ${player.wins}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                '${l10n.losses}: ${player.losses}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -99,8 +111,14 @@ class PlayersScreen extends StatelessWidget {
                                 '${l10n.games}: ${player.gamesWon}-${player.gamesLost}',
                                 style: const TextStyle(fontSize: 12),
                               ),
-                              Text('${l10n.pointsDiff}: $diffText', style: const TextStyle(fontSize: 12)),
-                              Text('${l10n.avgPoints}: $averagePoints', style: const TextStyle(fontSize: 12)),
+                              Text(
+                                '${l10n.pointsDiff}: $diffText',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                '${l10n.avgPoints}: $averagePoints',
+                                style: const TextStyle(fontSize: 12),
+                              ),
                             ],
                           ),
                         ],
@@ -113,9 +131,8 @@ class PlayersScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${player.points}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           l10n.points,
@@ -137,9 +154,9 @@ class PlayersScreen extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         icon: Icon(
                           player.isEnabled ? Icons.check_circle : Icons.cancel,
-                          color: player.isEnabled 
-                            ? Theme.of(context).colorScheme.primary 
-                            : Theme.of(context).disabledColor,
+                          color: player.isEnabled
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).disabledColor,
                         ),
                         onPressed: () async {
                           try {
@@ -152,7 +169,9 @@ class PlayersScreen extends StatelessWidget {
                             }
                           }
                         },
-                        tooltip: player.isEnabled ? 'Disable player' : 'Enable player',
+                        tooltip: player.isEnabled
+                            ? 'Disable player'
+                            : 'Enable player',
                       ),
                     ),
                   ],

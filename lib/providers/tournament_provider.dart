@@ -173,7 +173,10 @@ class TournamentProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      _tournament = _tournamentService.togglePlayerEnabled(_tournament!, playerId);
+      _tournament = _tournamentService.togglePlayerEnabled(
+        _tournament!,
+        playerId,
+      );
       await _saveTournament();
       _clearError();
     } catch (e) {
